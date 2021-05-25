@@ -1,0 +1,20 @@
+<launch>
+  <!-- cluster -->
+  <node name="test_grvc_e_clustering_node" pkg="grvc_e_clustering" type="test_grvc_e_clustering_node" output="screen">
+    <!-- Size of the buffer. -->
+    <param name="szBuffer" value="800"/> 
+
+    <!-- // Radius to evaluate cluster-event proximity-->
+    <param name="radius" value="20"/>
+
+    <!-- Number of cluster sample points to evaluate the cluster-event proximity-->
+    <param name="kappa" value="1"/>
+
+    <!-- Moving average weight-->
+    <param name="alpha" value="0.9"/>
+    
+    <!-- Minimum number of points required in a cluster -->
+    <param name="minN" value="15"/>
+    
+  </node>
+</launch>

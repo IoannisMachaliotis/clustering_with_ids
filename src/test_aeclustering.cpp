@@ -17,7 +17,7 @@ AEClustering *eclustering(new AEClustering);
 
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;
-//next step is to make the above arrays dynamic so that i can delete line 113
+//next step is to make the bellow arrays dynamic so that i can delete line 113
 int cluster_centers[70][2];
 int previous_clusters[70][2];
 int new_count;

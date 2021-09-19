@@ -25,7 +25,7 @@ Clone the repository to your ROS workspace (e.g ~/catkin_ws/src)
 
 
     $ git clone https://github.com/IoannisMachaliotis/clustering_with_ids.git
-    $ catkin build grvc_e_clustering
+    $ catkin build clustering_with_ids
     $ source ~/catkin_ws/devel/setup.bash
 
 The package includes a wrapper as example to use the tracker algorithm. The wrapper receives the input using the `dvs_msgs/EventArray` message format. To try the clustering, connect your camera and run the driver. Then type:

@@ -24,7 +24,7 @@ Juan Pablo Rodríguez-Gómez, Augusto Gómez Eguíluz, Jose Ramiro Martínez De-
 Clone the repository to your ROS workspace (e.g ~/catkin_ws/src) 
 
 
-    $ git clone https://github.com/grvcPerception/grvc_e_clustering.git
+    $ git clone https://github.com/IoannisMachaliotis/clustering_with_ids.git
     $ catkin build grvc_e_clustering
     $ source ~/catkin_ws/devel/setup.bash
 

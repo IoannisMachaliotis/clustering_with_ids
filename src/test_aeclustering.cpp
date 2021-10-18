@@ -135,7 +135,7 @@ vector<vector<double>> &remove_and_visualize(std::vector<std::vector<double>> &n
             k++;
         }
         if (duration > buff_limit){
-            n.erase(n.begin()+ID); // Problem with erasing?? 
+            n.erase(n.begin()+ID);
         }
         ID++;
     }

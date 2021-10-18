@@ -187,7 +187,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
                 // Convert cen vector from eigen vector to std::vector
                 std::vector<double> cen_converted(&cen[0], cen.data() + cen.cols() * cen.rows());
 
-                // STORE THE TIMESTAMP (1 of 3 options from 1st objective) ALONG SIDE WITH THE EVENT/CLUSTER (3D ARRAY INSTEAD OF 2D)
+                // STORE THE TIMESTAMP ALONG SIDE WITH THE EVENT/CLUSTER
                 ros::Time t_stamp = ros::Time::now();
                 cen_converted.push_back(t_stamp.toSec()); //Add the timestamp to new cluster
 

@@ -31,7 +31,7 @@ void show_vector(vector<double> n)
         cout << " ,";
         k++;
     }
-    std::cout << "\n";
+    cout << "\n";
 }
 
 void show_clusters(vector<vector<double>> cluster_centers){
@@ -43,8 +43,8 @@ void show_clusters(vector<vector<double>> cluster_centers){
         int k = 0;
         for (double i : n)
         {
-            std::cout << i;
-            if (k!=2){std::cout << ",  ";}
+            cout << i;
+            if (k!=2){cout << ",  ";}
             k++;
         }
         cout << "\n";
@@ -208,7 +208,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
 
 void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
 {
-    std::deque<double> ev(4, 0.0);
+    deque<double> ev(4, 0.0);
     for (const auto e : msg->events)
     {
         ev[0] = e.ts.toSec();

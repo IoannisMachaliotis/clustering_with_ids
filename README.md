@@ -1,4 +1,4 @@
-# grvc_e_clustering 
+# clustering_with_ids 
 This repository includes the ROS implemenatation of the event-based clustering algorithm described in the paper "**Asynchronous Event-Based Clustering and Tracking for Intrusion Monitoring in UAS**".
 
 ## Publication
@@ -24,15 +24,15 @@ Juan Pablo Rodríguez-Gómez, Augusto Gómez Eguíluz, Jose Ramiro Martínez De-
 Clone the repository to your ROS workspace (e.g ~/catkin_ws/src) 
 
 
-    $ git clone https://github.com/IoannisMachaliotis/clustering_with_ids.git
+    $ sudo git clone https://github.com/IoannisMachaliotis/clustering_with_ids.git
     $ catkin build clustering_with_ids
     $ source ~/catkin_ws/devel/setup.bash
 
 The package includes a wrapper as example to use the tracker algorithm. The wrapper receives the input using the `dvs_msgs/EventArray` message format. To try the clustering, connect your camera and run the driver. Then type:
 
-    $ roslaunch grvc_e_clustering test_aeclustering.launch
+    $ roslaunch clustering_with_ids test_aeclustering.launch
 
 # License
 This code is released under MIT license
 
-We constantly work to improve algorithm performance and code reliability. For additional information please contact Augusto Gomez Eguiluz <ageguiluz@us.es>
+We constantly work to improve algorithm performance and code reliability. For additional information please contact Ioannis Machaliotis <johnmax1996@gmail.com>

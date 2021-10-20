@@ -9,11 +9,7 @@
 #include <vector>
 #include <math.h>
 #include <sstream>
-#include <typeinfo>
-#include <tuple>
-#include <ros/callback_queue.h>
 #include <iostream>
-#include <cstdio>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -24,25 +20,25 @@ AEClustering *eclustering(new AEClustering);
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;
 
-std::vector<std::vector<double>> cluster_centers;
+vector<vector<double>> cluster_centers;
 
-void show_vector(std::vector<double> n)
+void show_vector(vector<double> n)
 {
     int k = 0;
     for (double i : n)
     {
-        std::cout << i;
-        std::cout << " ,";
+        cout << i;
+        cout << " ,";
         k++;
     }
     std::cout << "\n";
 }
 
-void show_clusters(std::vector<std::vector<double>> cluster_centers){
+void show_clusters(vector<vector<double>> cluster_centers){
     int Id = 0; // Create Cluster ID
-    for (std::vector<double> n : cluster_centers){
+    for (vector<double> n : cluster_centers){
         //show ID and center of new clusters
-        std::cout << "ID:" << Id << "   Center: ";
+        cout << "ID:" << Id << "   Center: ";
 
         int k = 0;
         for (double i : n)
@@ -51,13 +47,13 @@ void show_clusters(std::vector<std::vector<double>> cluster_centers){
             if (k!=2){std::cout << ",  ";}
             k++;
         }
-        std::cout << "\n";
+        cout << "\n";
         Id++;
     }
-    std::cout << "\n";
+    cout << "\n";
 }
 
-int is_cluster_in(std::vector<double> v, std::vector<std::vector<double>> cluster_centers){
+int is_cluster_in(vector<double> v, vector<vector<double>> cluster_centers){
 
     double radius = 20 ;
     double IS_IN=0;
@@ -77,7 +73,7 @@ int is_cluster_in(std::vector<double> v, std::vector<std::vector<double>> cluste
         if (k == 2){t_v = i;}
         k++;
     }
-    for (std::vector<double> n : cluster_centers)
+    for (vector<double> n : cluster_centers)
     {
         int kk = 0;
         double x;
@@ -104,14 +100,14 @@ int is_cluster_in(std::vector<double> v, std::vector<std::vector<double>> cluste
     return IS_IN;
 }
 
-void visualizer(std::vector<std::vector<double>> n, cv::Mat im)
+void visualizer(vector<vector<double>> n, cv::Mat im)
 {   
     int j = 0;
-    for (std::vector<double> v : n){
+    for (vector<double> v : n){
         cv::circle(im, cv::Point(v[0] + 2, v[1] + 2), 2, cv::Scalar(255, 0, 0), -1);
 
-        std::string str;
-        std::stringstream ss;
+        string str;
+        stringstream ss;
         ss << j;
         ss >> str;
         cv::putText(im, str, cv::Point(v[0] + 4, v[1] + 4), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(100, 150, 200), 0, false);
@@ -119,12 +115,12 @@ void visualizer(std::vector<std::vector<double>> n, cv::Mat im)
     }
 }
 
-vector<vector<double>> &remover(std::vector<std::vector<double>> &n, double Is_in)
+vector<vector<double>> &remover(vector<vector<double>> &n, double Is_in)
 {
     double buff_limit = 0.01; // seconds
     int ID = 0;
     double duration=0;
-    for (std::vector<double> v: n){
+    for (vector<double> v: n){
         int k=0;
         for (double n : v){
             if (k==2) {
@@ -140,7 +136,7 @@ vector<vector<double>> &remover(std::vector<std::vector<double>> &n, double Is_i
     }
     return n;
 }
-vector<vector<double>> &assigner( std::vector<std::vector<double>> &n, std::vector<double> cen_con, double IS_IN){
+vector<vector<double>> &assigner(vector<vector<double>> &n, vector<double> cen_con, double IS_IN){
     double Is_in = IS_IN; 
 
     //CHECK IF THE CLUSTER EXISTS IN THE cluster_centers LIST
@@ -169,7 +165,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
         int minN = eclustering->getMinN(); // 15
         cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
         
-        std::cout << "-----------NEW CLUSTERS----------\n";            
+        cout << "-----------NEW CLUSTERS----------\n";            
 
         for (auto cc : eclustering->clusters){
             Eigen::VectorXd cen(cc.getClusterCentroid());
@@ -179,7 +175,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
                 cv::circle(im, cv::Point(cen[0], cen[1]), 2, cv::Scalar(0, 255, 0, 255), -1);
 
                 // Convert cen vector from eigen vector to std::vector
-                std::vector<double> cen_converted(&cen[0], cen.data() + cen.cols() * cen.rows());
+                vector<double> cen_converted(&cen[0], cen.data() + cen.cols() * cen.rows());
 
                 // STORE THE TIMESTAMP ALONG SIDE WITH THE EVENT/CLUSTER
                 ros::Time t_stamp = ros::Time::now();

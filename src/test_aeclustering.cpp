@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 
     image_transport::ImageTransport it(nh_public);
     pubIm = it.advertise("clusters_image", 1);
-    image_transport::Subscriber subIm = it.subscribe("dvs/image_raw", 1, imageCallback);
+    image_transport::Subscriber subIm = it.subscribe("dvs_rendering", 1, imageCallback);
 
     ros::spin();
 }

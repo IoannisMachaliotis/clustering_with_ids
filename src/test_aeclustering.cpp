@@ -1,19 +1,21 @@
-#include <ros/callback_queue.h>
-#include <iostream>
-#include <cstdio>
-#include <stdlib.h>
-#include <stdio.h>
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
 #include <dvs_msgs/EventArray.h>
 #include "grvc_e_clustering/AEClustering.h"
+
+// --------Libraries added---------
 #include <vector>
 #include <math.h>
 #include <sstream>
 #include <typeinfo>
 #include <tuple>
+#include <ros/callback_queue.h>
+#include <iostream>
+#include <cstdio>
+#include <stdlib.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -64,7 +66,7 @@ int is_cluster_in(std::vector<double> v, std::vector<std::vector<double>> cluste
     double y_v;
     double t_v;
     double d = 500;
-    int ID=0;
+    int ID = 0;
 
     int j = 0;
 
@@ -102,10 +104,8 @@ int is_cluster_in(std::vector<double> v, std::vector<std::vector<double>> cluste
     return IS_IN;
 }
 
-void visualizer(std::vector<std::vector<double>> n, cv::Mat im, double IS_IN)
+void visualizer(std::vector<std::vector<double>> n, cv::Mat im)
 {   
-    double Is_in=IS_IN;
-    double t_stamp;
     int j = 0;
     for (std::vector<double> v : n){
         cv::circle(im, cv::Point(v[0] + 2, v[1] + 2), 2, cv::Scalar(255, 0, 0), -1);
@@ -119,9 +119,8 @@ void visualizer(std::vector<std::vector<double>> n, cv::Mat im, double IS_IN)
     }
 }
 
-vector<vector<double>> &remove_and_visualize(std::vector<std::vector<double>> &n, double Is_in , cv::Mat im){
-    
-    // ----REMOVAL---
+vector<vector<double>> &remover(std::vector<std::vector<double>> &n, double Is_in , cv::Mat im)
+{
     double buff_limit = 0.01; // seconds
     int ID = 0;
     double duration=0;
@@ -139,9 +138,6 @@ vector<vector<double>> &remove_and_visualize(std::vector<std::vector<double>> &n
         }
         ID++;
     }
-
-    // VISUALIZATION
-    visualizer(n, im, Is_in);
     return n;
 }
 vector<vector<double>> &assigner( std::vector<std::vector<double>> &n, std::vector<double> cen_con, double IS_IN){
@@ -156,9 +152,7 @@ vector<vector<double>> &assigner( std::vector<std::vector<double>> &n, std::vect
     else if ( Is_in < 40 && !n.empty() ) //For when we get an ID from condition: distance < limit
     {
         //Assign new cluster with the same Id
-        n.erase(n.cbegin() + Is_in);
-        auto Iterator = n.cbegin();
-        n.insert(Iterator + Is_in, cen_con);
+        n.at(Is_in) = cen_con;
     }
     else if (Is_in > 40)// Then it's a timestamp 
     {
@@ -198,9 +192,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
                 assigner(cluster_centers, cen_converted, Is_in);
 
                 // REMOVAL OF CLUSTERS STOPPED BEING TRACKED
-                remove_and_visualize(cluster_centers, Is_in, im);
+                remover(cluster_centers, Is_in);
             }
         }
+        // VISUALIZATION
+        visualizer(cluster_centers, im);
+        
         // TERMINAL VIEW
         show_clusters(cluster_centers);
         

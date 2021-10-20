@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>grvc_e_clustering</name>
+  <name>clustering_with_ids</name>
   <version>1.0.0</version>
-  <description>The grvc_e_clustering package</description>
+  <description>The clustering_with_ids package</description>
 
-  <maintainer email="augusto.gomez.eguiluz@gmail.com">grvc</maintainer>
-  <author> Augusto Gomez Eguiluz</author>	
+  <maintainer email="johnmax1996@gmail.com">grvc</maintainer>
+  <author> Ioannis Machaliotis</author>	
   <license>MIT</license>
   
   <buildtool_depend>catkin</buildtool_depend>

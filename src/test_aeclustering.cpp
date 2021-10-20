@@ -119,7 +119,7 @@ void visualizer(std::vector<std::vector<double>> n, cv::Mat im)
     }
 }
 
-vector<vector<double>> &remover(std::vector<std::vector<double>> &n, double Is_in , cv::Mat im)
+vector<vector<double>> &remover(std::vector<std::vector<double>> &n, double Is_in)
 {
     double buff_limit = 0.01; // seconds
     int ID = 0;

@@ -168,10 +168,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
         cout << "-----------NEW CLUSTERS----------\n";            
 
         for (auto cc : eclustering->clusters){
-            Eigen::VectorXd cen(cc.getClusterCentroid());
-
             if (cc.getN() >= minN){ //if the clusters contains more than 15 events??
-                
+                Eigen::VectorXd cen(cc.getClusterCentroid());
                 cv::circle(im, cv::Point(cen[0], cen[1]), 2, cv::Scalar(0, 255, 0, 255), -1);
 
                 // Convert cen vector from eigen vector to std::vector

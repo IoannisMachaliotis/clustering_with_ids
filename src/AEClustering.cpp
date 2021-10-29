@@ -2,7 +2,7 @@
 
 AEClustering::AEClustering(){
     minN_ = 5;
-    szBuffer_ = 0;
+    szBuffer_ = 800;
     tMin_ = 0;
     radius_ = 25;
     alpha_ = 0.8;
@@ -39,10 +39,11 @@ bool AEClustering::update(const std::deque<double> e){
     for(int ii = 0; ii < clusters.size(); ii++){
         clusters[ii].forget(tMin_);
 
-        if (clusters[ii].getN() == 0){
+        // Added 2nd condition ---> improves performance by refreshing buffer of events used for a cluster
+        if (clusters[ii].getN() == 0 || clusters[ii].getN() > szBuffer_) 
+	{
             // Remove the cluster when it is empty
             removed.push_back(ii);
-//	    clusters[ii].reset(alpha_, kappa_, minN_);
         }
         else if (clusters[ii].manhattanDistance(pix) <= radius_){
             // Assign to the cluster if it is close to the weighted moving average
@@ -58,7 +59,6 @@ bool AEClustering::update(const std::deque<double> e){
 
     //No proximity -> new cluster
     if(assigned.size() == 0){
-//	clusters[assigned[0]].reset(alpha_, kappa_, minN_);
         clusters.push_back(MyCluster(alpha_, kappa_));
         clusters[clusters.size()-1].add(e, eventId_, t0_);
         lastUpdatedCluster_ = clusters.size()-1;
@@ -166,17 +166,8 @@ void AEClustering::merge_clusters_(std::deque<int> assigned){
     clusters[assigned[0]].setDatT(aux_datT);
     clusters[assigned[0]].setDatPol(aux_datPol);
     clusters[assigned[0]].setMu(aux_mu);
-//    clusters[assigned[0]].reset(alpha_, kappa_, minN_);
 
     for(int ii = m-1; ii > 0; ii--){
         clusters.erase(clusters.begin()+assigned[ii]);
-	//reset clusters
-//	clusters[assigned[ii]].reset(alpha_, kappa_, minN_);
     }
-/*
-    for (int ii = 0; ii < m-1; ii++){
-	clusters[assigned[ii]].reset(alpha_, kappa_, minN_);
-    }
-*/
 }
-

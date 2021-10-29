@@ -2,16 +2,19 @@
   <!-- cluster -->
   <node name="test_grvc_e_clustering_node" pkg="clustering_with_ids" type="test_grvc_e_clustering_node" output="screen">
     <!-- Size of the buffer. -->
-    <param name="szBuffer" value="800"/> 
+    <param name="szBuffer" value="800"/> <!-- how many events for the total amount of clusters for every moment-->
 
     <!-- // Radius to evaluate cluster-event proximity-->
-    <param name="radius" value="20"/>
+    <param name="radius" value="10"/>    
+    <!-- It depends on how far is the object we want to track compared to resolution (pixels)
+    And specifically,   far-> small     close-> big -->
+
 
     <!-- Number of cluster sample points to evaluate the cluster-event proximity-->
-    <param name="kappa" value="1"/>
+    <param name="kappa" value="0.5"/>
 
     <!-- Moving average weight-->
-    <param name="alpha" value="0.9"/>
+    <param name="alpha" value="0.8"/>
     
     <!-- Minimum number of points required in a cluster -->
     <param name="minN" value="15"/>

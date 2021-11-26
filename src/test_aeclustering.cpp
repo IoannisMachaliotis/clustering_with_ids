@@ -98,15 +98,10 @@ void visualizer(vector<vector<double>> n1, vector<vector<double>> n2)
 
 VectorXd KF_algorithm(VectorXd& y)
 {
-//    cout << "\nA:" << A << "\nx_hat_new:\n"<< x_hat_new << "\nx_hat:\n" << x_hat ;
     x_hat_new = A * x_hat;
-//    cout << "\nx_hat_new:\n" << x_hat_new << "\nP:\n" << P << "\nQ:\n"<< Q;
     P = A*P*(A.transpose()) + Q;
-//    cout << "\nP:\n" << P << "\nK:\n" << K << "\nC:\n"<< C;
     K = (P*C.transpose())*(C*P*C.transpose() + R).inverse();
-//    cout << "\nK:\n" << K << "\ny:\n" << y << "\nR:\n"<< R;
     x_hat_new += K*(y - C*x_hat_new );
-//    cout << "\nx_hat_new:\n"<< x_hat_new;
     P = (I - K*C)*P;
     x_hat = x_hat_new;
 
@@ -138,7 +133,7 @@ vector<vector<double>> &kalmanfilter(vector<vector<double>> &cluster_centers, ve
         counter1++;
     }
 
-    // CONVERT BACK TO EIGEN MATRICES and Create History
+    // CONVERT BACK TO EIGEN MATRICES
     MatrixXd POS_MEAS_MAT_2D(position_vector.size(),2);
     int counter2 = 0;
     for (vector<double> v:position_vector){
@@ -168,7 +163,7 @@ vector<vector<double>> &kalmanfilter(vector<vector<double>> &cluster_centers, ve
     
     // Covariance matrices Based on my data
     Q << 0.5*pow(dt,2), 0.5*pow(dt,2), .0, 
-        0.5*pow(dt,2), 0.5*pow(dt,2), .0, // Mean of measurements covariance 
+        0.5*pow(dt,2), 0.5*pow(dt,2), .0,        // Mean of measurements covariance 
         .0, .0, .0;
 
     R << 5;                                      // Observation Covariance
@@ -204,11 +199,12 @@ vector<vector<double>> &kalmanfilter(vector<vector<double>> &cluster_centers, ve
                 
                 // Put back the IDs
                 if (j == 0){
-                    temp_updated_center.push_back(temp_IDs(i)); // Assign the ID back
+                    // Assign the ID back 
+                    temp_updated_center.push_back(temp_IDs(i)); // vector --> {ID}
                 }
-                temp_updated_center.push_back(ii);
+                temp_updated_center.push_back(ii);              // vector --> {ID, x, y}
 
-                if (temp_updated_center.size() == 3){ //Every 2 iterations (x & y)
+                if (temp_updated_center.size() == 3){           // Every 2 iterations (x & y)
                     kalman_centers.push_back(temp_updated_center);
                     temp_updated_center.erase(temp_updated_center.begin(),temp_updated_center.end());
                 }

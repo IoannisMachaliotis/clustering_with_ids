@@ -1,10 +1,6 @@
 # clustering_with_ids 
 This repository includes the ROS implemenatation of the event-based clustering algorithm described in the paper "**Asynchronous Event-Based Clustering and Tracking for Intrusion Monitoring in UAS**".
 
-## Publication
-In case you use this code, please cite the following [publication](): 
-
-
 
 # Requirements
 * [Eigen 3](https://eigen.tuxfamily.org/dox/)

@@ -2,7 +2,7 @@
   <!-- cluster -->
   <node name="test_grvc_e_clustering_node" pkg="clustering_with_ids" type="test_grvc_e_clustering_node" output="screen">
     <!-- Size of the buffer. -->
-    <param name="szBuffer" value="300"/> 
+    <param name="szBuffer" value="200"/> 
     <!-- how many events for the total amount of clusters for every moment-->
 
     <!-- // Radius to evaluate cluster-event proximity-->

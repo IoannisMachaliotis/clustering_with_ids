@@ -4,7 +4,7 @@ This repository includes the ROS implemenatation of the event-based clustering a
 
 # Requirements
 * [Eigen 3](https://eigen.tuxfamily.org/dox/)
-* [OpenCV 3.3](https://opencv.org/opencv-3-3/)
+* [OpenCV 4.2](https://opencv.org/opencv-4-2-0/)
 * [ROS Kinetic](http://wiki.ros.org/kinetic) 
 * [RPG DVS ROS](https://github.com/uzh-rpg/rpg_dvs_ros) 
 
@@ -25,3 +25,7 @@ The package includes a wrapper as example to use the tracker algorithm. The wrap
 This code is released under MIT license
 
 We constantly work to improve algorithm performance and code reliability. For additional information please contact Ioannis Machaliotis <johnmax1996@gmail.com>
+
+# Preview
+
+Take a look at the simulation preview at my channel on [Youtube](https://www.youtube.com/channel/UCNrjasEwN54DjObTZaLTm0w/playlists)

@@ -24,14 +24,15 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-)
-
-
+  include/clustering_with_ids
+  )
 
 add_library(clustering_with_ids
   src/MyCluster.cpp
   src/AEClustering.cpp
+  src/Tracking.cpp
+  src/Improve.cpp
 )
 
-add_executable(test_grvc_e_clustering_node src/test_tracker_with_ids.cpp)
-target_link_libraries(test_grvc_e_clustering_node clustering_with_ids ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})
+add_executable(clustering_with_ids_node src/test_tracker_with_ids_UPDATE.cpp)
+target_link_libraries(clustering_with_ids_node clustering_with_ids ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})

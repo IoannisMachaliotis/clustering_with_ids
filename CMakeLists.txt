@@ -34,5 +34,5 @@ add_library(clustering_with_ids
   src/Improve.cpp
 )
 
-add_executable(clustering_with_ids_node src/test_tracker_with_ids_UPDATE.cpp)
+add_executable(clustering_with_ids_node src/id_speed_tracker.cpp)
 target_link_libraries(clustering_with_ids_node clustering_with_ids ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})

@@ -24,7 +24,7 @@ The package includes a wrapper as example to use the tracker algorithm. The wrap
 # License
 This code is released under MIT license
 
-We constantly work to improve algorithm performance and code reliability. For additional information please contact Ioannis Machaliotis <johnmax1996@gmail.com>
+I constantly work to improve algorithm performance and code reliability. For additional information please contact me at <johnmax1996@gmail.com>
 
 # Preview
 

@@ -5,7 +5,7 @@ This repository includes the ROS implemenatation of the event-based clustering a
 # Requirements
 * [Eigen 3](https://eigen.tuxfamily.org/dox/)
 * [OpenCV 4.2](https://opencv.org/opencv-4-2-0/)
-* [ROS Kinetic](http://wiki.ros.org/kinetic) -> with Linux Ubuntu (16.04 up until 18.04)
+* [ROS Kinetic](http://wiki.ros.org/kinetic) -> with Linux Ubuntu (16.04 up until 22.04)
 * [RPG DVS ROS](https://github.com/uzh-rpg/rpg_dvs_ros) 
 
 

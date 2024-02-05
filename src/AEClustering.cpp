@@ -31,15 +31,10 @@ bool AEClustering::update(const std::deque<double> e)
 {
     if (t0_ < 0)
     {
-bool AEClustering::update(const std::deque<double> e)
-{
-    if (t0_ < 0)
-    {
         t0_ = e[0];
     }
 
     Eigen::VectorXd pix(2);
-    pix(0) = e[1];
     pix(0) = e[1];
     pix(1) = e[2];
 
@@ -49,9 +44,6 @@ bool AEClustering::update(const std::deque<double> e)
     std::deque<int> removed;
     updateBuffer_(t);
 
-    // Evaluate proximity with clusters
-    for (int ii = 0; ii < clusters.size(); ii++)
-    {
 
     // Evaluate proximity with clusters
     for (int ii = 0; ii < clusters.size(); ii++)
@@ -64,8 +56,7 @@ bool AEClustering::update(const std::deque<double> e)
             // Remove the cluster when it is empty or when it exceeds buffer_sz
             removed.push_back(ii);
         }
-        else if (clusters[ii].manhattanDistance(pix) <= radius_)
-        {
+
         else if (clusters[ii].manhattanDistance(pix) <= radius_)
         {
             // Assign to the cluster if it is close to the weighted moving average
@@ -73,11 +64,7 @@ bool AEClustering::update(const std::deque<double> e)
         }
         else if (clusters[ii].getN() > minN_)
         {
-        else if (clusters[ii].getN() > minN_)
-        {
             // Sampling old points from cluster and assign to the cluster if it is close to any of them
-            if (clusters[ii].manhattanDistanceWithSampling(pix) <= radius_)
-            {
             if (clusters[ii].manhattanDistanceWithSampling(pix) <= radius_)
             {
                 assigned.push_back(ii);
@@ -88,17 +75,10 @@ bool AEClustering::update(const std::deque<double> e)
     // No proximity -> new cluster
     if (assigned.size() == 0)
     {
-    // No proximity -> new cluster
-    if (assigned.size() == 0)
-    {
         clusters.push_back(MyCluster(alpha_, kappa_));
         clusters[clusters.size() - 1].add(e, eventId_, t0_);
         lastUpdatedCluster_ = clusters.size() - 1;
-        clusters[clusters.size() - 1].add(e, eventId_, t0_);
-        lastUpdatedCluster_ = clusters.size() - 1;
     }
-    else
-    {
     else
     {
         lastUpdatedCluster_ = assigned[0];
@@ -107,18 +87,11 @@ bool AEClustering::update(const std::deque<double> e)
         // Proximity to more than one cluster-> merging
         if (assigned.size() >= 2)
         {
-        // Proximity to more than one cluster-> merging
-        if (assigned.size() >= 2)
-        {
             merge_clusters_(assigned);
-            return false;
             return false;
         }
     }
 
-    for (int ii = removed.size() - 1; ii >= 0; ii--)
-    {
-        if (lastUpdatedCluster_ > removed[ii])
     for (int ii = removed.size() - 1; ii >= 0; ii--)
     {
         if (lastUpdatedCluster_ > removed[ii])
@@ -132,8 +105,6 @@ bool AEClustering::update(const std::deque<double> e)
     return false;
 }
 
-int AEClustering::getLastUpdatedClusterIdx()
-{
 int AEClustering::getLastUpdatedClusterIdx()
 {
     return lastUpdatedCluster_;
@@ -150,11 +121,7 @@ const int AEClustering::getMinN()
 
 void AEClustering::updateBuffer_(double t)
 {
-void AEClustering::updateBuffer_(double t)
-{
     tBuffer_.push_back(t);
-    if (tBuffer_.size() > szBuffer_)
-    {
     if (tBuffer_.size() > szBuffer_)
     {
         tBuffer_.pop_front();
@@ -162,8 +129,6 @@ void AEClustering::updateBuffer_(double t)
     tMin_ = tBuffer_[0];
 }
 
-void AEClustering::merge_clusters_(std::deque<int> assigned)
-{
 void AEClustering::merge_clusters_(std::deque<int> assigned)
 {
 
@@ -184,8 +149,6 @@ void AEClustering::merge_clusters_(std::deque<int> assigned)
 
     for (int ii = 0; ii < m; ii++)
     {
-    for (int ii = 0; ii < m; ii++)
-    {
         nn.push_back(clusters[assigned[ii]].getN());
         datId.push_back(clusters[assigned[ii]].getDatId());
         dat.push_back(clusters[assigned[ii]].getDat());
@@ -199,9 +162,6 @@ void AEClustering::merge_clusters_(std::deque<int> assigned)
     for (int ii = 0; ii < m; ii++)
     {
         aux_mu += ((double)clusters[assigned[ii]].getN() / (double)aux_n) * clusters[assigned[ii]].getMu();
-    for (int ii = 0; ii < m; ii++)
-    {
-        aux_mu += ((double)clusters[assigned[ii]].getN() / (double)aux_n) * clusters[assigned[ii]].getMu();
     }
 
 
@@ -209,16 +169,8 @@ void AEClustering::merge_clusters_(std::deque<int> assigned)
     double tt;
     while (idx >= 0)
     {
-    while (idx >= 0)
-    {
         idx = -1;
         tt = std::numeric_limits<double>::max();
-        for (int jj = 0; jj < m; jj++)
-        {
-            if (count[jj] < nn[jj])
-            {
-                if (datT[jj][count[jj]] < tt)
-                {
         for (int jj = 0; jj < m; jj++)
         {
             if (count[jj] < nn[jj])
@@ -230,8 +182,6 @@ void AEClustering::merge_clusters_(std::deque<int> assigned)
                 }
             }
         }
-        if (idx >= 0)
-        {
         if (idx >= 0)
         {
             aux_datId.push_back(datId[idx][count[idx]]);
@@ -249,11 +199,6 @@ void AEClustering::merge_clusters_(std::deque<int> assigned)
     clusters[assigned[0]].setDatPol(aux_datPol);
     clusters[assigned[0]].setMu(aux_mu);
 
-    for (int ii = m - 1; ii > 0; ii--)
-    {
-        clusters.erase(clusters.begin() + assigned[ii]);
-    }
-}
     for (int ii = m - 1; ii > 0; ii--)
     {
         clusters.erase(clusters.begin() + assigned[ii]);

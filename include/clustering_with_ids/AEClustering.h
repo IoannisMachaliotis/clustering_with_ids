@@ -1,3 +1,4 @@
+#pragma once
 #include "MyCluster.h"
 
 #ifndef AECLUSTERING_CLASS_H
@@ -28,15 +29,14 @@ class AEClustering{
 
         AEClustering();
 
-        void init(int szBuffer, double radius=25, int kappa=0, double alpha=0.5, int minN=5);
+        void init(int szBuffer = 800, double radius=25, double kappa=0, double alpha=0.5, int minN=5);
 
         bool update(const std::deque<double> e);
     
         int getLastUpdatedClusterIdx();
 
-        int getMinN();
+        const int getMinN();
 
 };
 
 #endif
-

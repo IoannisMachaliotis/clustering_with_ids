@@ -1,21 +1,21 @@
-#include "grvc_e_clustering/MyCluster.h"
+#include "clustering_with_ids/MyCluster.h"
 
 
 MyCluster::MyCluster(){
     mu_ = Eigen::VectorXd::Zero(2);
     n_ = 0;
-    alpha_=0.8;
+    alpha_= 0.8; // percentage of previous info storing??
     kappa_ = 0.5;
 }
 
-MyCluster::MyCluster(double alpha, int kappa){
+MyCluster::MyCluster(double alpha, double kappa){
     mu_ = Eigen::VectorXd::Zero(2);
     n_ = 0;
     alpha_ = alpha;
     kappa_ = kappa;
 }
 
-void MyCluster::reset(int kappa, double alpha, int minN){
+void MyCluster::reset(double kappa, double alpha, int minN){ // Not used anywhere?
     kappa_ = kappa;
     alpha_ = alpha;
 //    minN = 5; //???
@@ -69,7 +69,7 @@ double MyCluster::manhattanDistanceWithSampling(Eigen::VectorXd x){
 
     int idx = 0;
     double ma = std::numeric_limits<double>::max();
-    double foo=0.0;
+    double foo = 0.0;
 
     if(kappa_ > n_){
         for (const auto y : dat_){
@@ -173,4 +173,5 @@ Eigen::VectorXd MyCluster::getClusterCentroid(){
 
 void MyCluster::updateMu_(Eigen::VectorXd pix){
     mu_ = (1-alpha_) * mu_ + alpha_ * pix;
+//    mu_ = pix;
 }

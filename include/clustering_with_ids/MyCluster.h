@@ -16,7 +16,7 @@ class MyCluster{
         double alpha_;
         Eigen::VectorXd mu_;
         int n_;
-        int kappa_;
+        double kappa_;
 
         void updateMu_(Eigen::VectorXd pix);
         
@@ -24,9 +24,9 @@ class MyCluster{
 
         MyCluster();
 
-        MyCluster(double alpha, int k);
+        MyCluster(double alpha, double k);
 
-        void reset(int kappa, double alpha, int minN);
+        void reset(double kappa, double alpha, int minN);
 
         void add(const std::deque<double> e, int &eventId, double t0);
 
@@ -67,3 +67,4 @@ class MyCluster{
 };
 
 #endif
+

@@ -6,8 +6,6 @@
 const bool accuracy_visual = false;
 
 using namespace Eigen;
-using namespace std;
-
 
 // ------ For Accuracy -------
 MatrixXd Extracted_cen(CLUSTERS, 2);   // Extracted Centers
@@ -15,10 +13,10 @@ MatrixXd Predicted_cen(CLUSTERS, 2);   // Predicted Centers
 VectorXd Accuracy_mat(CLUSTERS, 1);    // Accuracy
 MatrixXd Velocity_mat(CLUSTERS, 2);    // Velocity
 
-double dt;
+const double dt = 20;;
 // -------------- KALMAN FILTER VARIABLES ----------------
-int n = 3;                             // Number of states (position, velocity, acceleration)
-int m = 1;                             // Number of measurements
+const unsigned int n = 3;                             // Number of states (position, velocity, acceleration)
+const unsigned int m = 1;                             // Number of measurements
 
 
 MatrixXd A(n, n);                      // State Matrix
@@ -40,8 +38,8 @@ VectorXd v_temp(3);
 MatrixXd previous_KF_centers(CLUSTERS, 2);
 
 
-VectorXd Eucleidian_acc(vector<vector<double>> &cluster_centers, vector<vector<double>> &kalman_centers){
-    int size = cluster_centers.size();
+VectorXd Eucleidian_acc(const std::vector<std::vector<double>> &cluster_list, const std::vector<std::vector<double>> &kalman_centers){
+    const unsigned int size = cluster_list.size();
 
     // Initialize Matrices
     for (int i = 0; i < CLUSTERS; i++){
@@ -55,11 +53,11 @@ VectorXd Eucleidian_acc(vector<vector<double>> &cluster_centers, vector<vector<d
 
     // Convert from std to Eigen vectors for processing
     int counter = 0;
-    for (vector<double> v : cluster_centers){
+    for (const std::vector<double> aVector : cluster_list){
         int j = 0;
-        for (double A : v){
+        for (const double aCluster : aVector){
             if (j != 0){
-                Extracted_cen(counter, j - 1) = A;
+                Extracted_cen(counter, j - 1) = aCluster;
             }
             j++;
         }
@@ -67,11 +65,11 @@ VectorXd Eucleidian_acc(vector<vector<double>> &cluster_centers, vector<vector<d
     }
 
     int counter1 = 0;
-    for (vector<double> v : kalman_centers){
+    for (const std::vector<double> aVector : kalman_centers){
         int j = 0;
-        for (double A : v){
+        for (const double aCluster : aVector){
             if (j != 0){
-                Predicted_cen(counter1, j - 1) = A;
+                Predicted_cen(counter1, j - 1) = aCluster;
             }
             j++;
         }
@@ -107,7 +105,7 @@ VectorXd Eucleidian_acc(vector<vector<double>> &cluster_centers, vector<vector<d
 
 // --------------- KALMAN FILTER ----------------
 
-VectorXd KF_algorithm(VectorXd &y){
+VectorXd& KF_algorithm(const VectorXd &y){
     x_hat_new = A * x_hat;
     P = A * P * (A.transpose()) + Q;
     K = (P * C.transpose()) * (C * P * C.transpose() + R).inverse();
@@ -119,62 +117,60 @@ VectorXd KF_algorithm(VectorXd &y){
 
 
 // 1st member
-vector<vector<double> >& Improve::remover(vector<vector<double> >& cluster_centers){
-    double buff_limit = 0.01; // seconds (how fast to remove)
+std::vector<std::vector<double> >& Improve::remover(std::vector<std::vector<double> > &cluster_list){
+    const double buff_limit = 0.01; // seconds (how fast to remove)
     double Index;
     double duration = 0;
 
     int counter = 0;
-    for (vector<double> v : cluster_centers){
-        int k = 0;
-        for (double i : v){
-            if (k == 3){
-                ros::Time checkpoint = ros::Time::now();
+    for (const std::vector<double> aVector : cluster_list){
+        int aFeatureIterator = 0;
+        for (const double i : aVector){
+            if (aFeatureIterator == 3){
+                const ros::Time checkpoint = ros::Time::now();
                 duration = checkpoint.toSec() -  i;
             }
-            k++;
+            aFeatureIterator++;
         }
         if (duration > buff_limit){
             Index = counter;
-            cluster_centers.erase(cluster_centers.begin() + Index);
+            cluster_list.erase(cluster_list.begin() + Index);
         }
         counter++;
     }
-    return cluster_centers;
+    return cluster_list;
 }
 
 // 2nd member
-vector<vector<double> >& Improve::kalmanfilter(vector<vector<double> >& cluster_centers, vector<vector<double> >& kalman_centers){
-    dt = 20;
-
+std::vector<std::vector<double> >& Improve::kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers){
     // ------------- 2D IMPLEMENTATION of State Space Kalman Filter ---------------
-    vector<vector<double>> position_vector = {};
-    vector<double> temporary_IDs = {};
-    vector<double> temporary_num_of_ev = {};
-    vector<double> temporary_t_stamp = {};
-    vector<double> temporary_speed = {};
-    // ------- OBTAIN info FROM cluster_centers(to assign back afterwards) --------
+    std::vector<std::vector<double>> position_vector = {};
+    std::vector<double> temporary_IDs = {};
+    std::vector<double> temporary_num_of_ev = {};
+    std::vector<double> temporary_t_stamp = {};
+    std::vector<double> temporary_speed = {};
+    // ------- OBTAIN info FROM cluster_list(to assign back afterwards) --------
     int counter1 = 0;
-    for (vector<double> v : cluster_centers){
-        vector<double> temp_xy = {};
-        int k = 0;
-        for (double i : v){
-            if (k == 0){                             // IDs
-                temporary_IDs.push_back(i);
+    for (const std::vector<double> aVector : cluster_list){
+        std::vector<double> temp_xy = {};
+        int aFeatureIterator = 0;
+        for (const double aFeature : aVector){
+            if (aFeatureIterator == 0){                             // IDs
+                temporary_IDs.push_back(aFeature);
             }
-            if (k == 1 || k == 2){                   // 2D(x&y_axis_position)
-                temp_xy.push_back(i);
+            if (aFeatureIterator == 1 || aFeatureIterator == 2){                   // 2D(x&y_axis_position)
+                temp_xy.push_back(aFeature);
             }
-            if (k == 3){                             // t_stamp
-                temporary_t_stamp.push_back(i);
+            if (aFeatureIterator == 3){                             // t_stamp
+                temporary_t_stamp.push_back(aFeature);
             }
-            if (k == 4){                             //# events
-                temporary_num_of_ev.push_back(i);
+            if (aFeatureIterator == 4){                             //# events
+                temporary_num_of_ev.push_back(aFeature);
             }
-            if (k == 5){                             // speed
-                temporary_speed.push_back(i);
+            if (aFeatureIterator == 5){                             // speed
+                temporary_speed.push_back(aFeature);
             }
-            k++;
+            aFeatureIterator++;
         }
         position_vector.push_back(temp_xy);
         counter1++;
@@ -188,32 +184,32 @@ vector<vector<double> >& Improve::kalmanfilter(vector<vector<double> >& cluster_
     VectorXd temp_speed(position_vector.size(),1);       // speed
 
     int counter_1 = 0;
-    for (double i : temporary_IDs){                     // IDs
+    for (double i : temporary_IDs){                      // IDs
         temp_IDs(counter_1) = i;
         counter_1++;
     }
     int counter_2 = 0;
-    for (vector<double> v : position_vector){           // Position
+    for (const std::vector<double> aVector : position_vector){           // Position
         int j = 0;
-        for (double A : v){
-            POS_MEAS_MAT_2D(counter_2, j) = A;
+        for (const double aCluster : aVector){
+            POS_MEAS_MAT_2D(counter_2, j) = aCluster;
             j++;
         }
         counter_2++;
     }
     int counter_3 = 0;
-    for (double i : temporary_t_stamp){                  // t_stamps
-        temp_t_stamp(counter_3) = i;
+    for (const double t_stamp : temporary_t_stamp){                 // t_stamps
+        temp_t_stamp(counter_3) = t_stamp;
         counter_3++;
     }
     int counter_4 = 0;
-    for (double i : temporary_num_of_ev){                // # of events
-        temp_num_ev(counter_4) = i;
+    for (const double NumOfEvents : temporary_num_of_ev){           // # of events
+        temp_num_ev(counter_4) = NumOfEvents;
         counter_4++;
     }
     int counter_5 = 0;
-    for (double i : temporary_speed){                    // speed
-        temp_speed(counter_5) = i;
+    for (const double speed : temporary_speed){                     // speed
+        temp_speed(counter_5) = speed;
         counter_5++;
     }
 
@@ -240,7 +236,7 @@ vector<vector<double> >& Improve::kalmanfilter(vector<vector<double> >& cluster_
     // ----- ESTIMATE KALMAN CENTERS based on the info obtained ------
     if (POS_MEAS_MAT_2D.isZero() == 0){                             // If there is any cluster in Eigen Matrix
         for (int i = 0; i < POS_MEAS_MAT_2D.rows(); i++){
-            vector<double> temp_updated_center = {};                // Create std::vector which will be pushed_back every 2 iterations
+            std::vector<double> temp_updated_center = {};                // Create std::vector which will be pushed_back every 2 iterations
             for (int j = 0; j < POS_MEAS_MAT_2D.cols(); j++){
                 y << POS_MEAS_MAT_2D(i, j);                         // current measurement
 
@@ -258,7 +254,7 @@ vector<vector<double> >& Improve::kalmanfilter(vector<vector<double> >& cluster_
 
                 Velocity_mat(i, j) = v_temp(1);                     // Assign Velocity
 
-                // cout << Velocity_mat << "\n";
+                // std::cout << Velocity_mat << "\n";
 
                 if (j == 0){
                     // Assign the ID back
@@ -301,11 +297,11 @@ vector<vector<double> >& Improve::kalmanfilter(vector<vector<double> >& cluster_
 
     // CONVERT kalman_centers to EIGEN MATRICES and store for next iteration
     int counter3 = 0;
-    for (vector<double> v : kalman_centers){
+    for (const std::vector<double> aVector : kalman_centers){
         int j = 0;
-        for (double A : v){
+        for (const double aCluster : aVector){
             if (j != 0){
-                previous_KF_centers(counter3, j - 1) = A;
+                previous_KF_centers(counter3, j - 1) = aCluster;
             }
             j++;
         }
@@ -313,20 +309,20 @@ vector<vector<double> >& Improve::kalmanfilter(vector<vector<double> >& cluster_
     }
 
     // Accuracy measurement
-    Accuracy_mat << Eucleidian_acc(cluster_centers, kalman_centers);
+    Accuracy_mat << Eucleidian_acc(cluster_list, kalman_centers);
 
     // Choose if you want accuracy visualized
     if (accuracy_visual){
         int counter6 = 0;
-        for (vector<double> v : kalman_centers){
-            int num = (1 - Accuracy_mat(counter6)) * 100;
-            string s = "Impr:" + to_string(num) + "%";
+        for (const std::vector<double> aVector : kalman_centers){
+            const unsigned int num = (1 - Accuracy_mat(counter6)) * 100;
+            const std::string s = "Impr:" + std::to_string(num) + "%";
 
-            cv::putText(im2, s, cv::Point(v[1] + 4, v[2] - 14), cv::FONT_ITALIC, 0.3, cv::Scalar(50, 50, 255), 0, 16);
+            cv::putText(im2, s, cv::Point(aVector[1] + 4, aVector[2] - 14), cv::FONT_ITALIC, 0.3, cv::Scalar(50, 50, 255), 0, 16);
 
             counter6++;
         }
-        cout << "Accuracy for each cluster is:\n" << Accuracy_mat << "\n";
+        std::cout << "Accuracy for each cluster is:\n" << Accuracy_mat << "\n";
     }
     return kalman_centers;
 }

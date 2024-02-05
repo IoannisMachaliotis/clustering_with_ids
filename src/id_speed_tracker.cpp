@@ -17,11 +17,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-using namespace std;
 using namespace Eigen;
 
 unsigned int ID;
-const std::size_t my_radius = 15;
+const double my_radius = 15;
 double radius;
 int szBuffer;
 static std::vector<std::vector<double>> cluster_centers; // extracted list
@@ -44,7 +43,7 @@ sensor_msgs::ImagePtr im_msg;
 
 
 // ----------- FUNCTIONS FOR DEBUGGING -----------------
-void show_clusters(const std::vector<std::vector<double>> cluster_list){
+void show_clusters(const std::vector<std::vector<double>> &cluster_list){
     // show ID and center of new clusters
     for (const std::vector<double> aCluster : cluster_list){
         std::size_t featureIterator = 0;
@@ -84,7 +83,7 @@ void show_clusters(const std::vector<std::vector<double>> cluster_list){
     }
 }
 
-void show_vector(const std::vector<double> aVector){
+void show_vector(const std::vector<double> &aVector){
     std::size_t iterator = 0;
     for (const double aCoordinate : aVector){
         std::cout << aCoordinate;
@@ -93,11 +92,11 @@ void show_vector(const std::vector<double> aVector){
     }
     std::cout << "\n";
 }
-void show_centers(std::vector<std::vector<double>> cluster_centers){
+void show_centers(const std::vector<std::vector<double>> &cluster_list){
     //show ID and center of new clusters
-    for (std::vector<double> aVector : cluster_centers){
+    for (const std::vector<double> aVector : cluster_list){
         std::size_t featureIterator = 0;
-        for (double aCenter : aVector){   
+        for (const double aCenter : aVector){   
             if (featureIterator == 0){std::cout << "x:";}
             if (featureIterator == 1){std::cout << "y:";}
             std::cout << " " << aCenter;
@@ -113,12 +112,12 @@ void show_centers(std::vector<std::vector<double>> cluster_centers){
 // ------------------------------------------------------
 
 
-void visualizer(const std::vector<std::vector<double>> &kalman_centers, const std::vector<std::vector<double>> &cluster_centers, const MatrixXd &object_coordinates){
+void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const MatrixXd &object_coordinates){
     Tracking* tracking;
     double x1, y1, x2, y2;
 
     if (clusters_list_created_visual){
-        for (const std::vector<double> aVector : cluster_centers){                                                                             // kalman_centers with IDs
+        for (const std::vector<double> aVector : cluster_list){                                                                             // kalman_centers with IDs
             cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(0, 255, 0), -1, 16); // orange
         }
     }
@@ -135,7 +134,6 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, const st
         }
     }
     else{
-
         for (const std::vector<double> aVector : kalman_centers){                                                                               // kalman_centers with IDs
             cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(255, 150, 0), -1, 16); // orange
 
@@ -203,7 +201,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, const st
 }
 
 // ---------- CLUSTERS PROCESS FUNCTIONS ------------
-std::vector<double> is_cluster_in(std::vector<double> aVector, std::vector<std::vector<double>> cluster_centers) {
+std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list) {
     std::vector<double> Output;
     double IS_IN = 0;
     double x_v;
@@ -230,7 +228,7 @@ std::vector<double> is_cluster_in(std::vector<double> aVector, std::vector<std::
     }
 
     // Get info from cluster_centers
-    for (const std::vector<double> aVector : cluster_centers){
+    for (const std::vector<double> aVector : cluster_list){
         double x;
         double y;
         double Id;
@@ -275,29 +273,29 @@ std::vector<double> is_cluster_in(std::vector<double> aVector, std::vector<std::
     return Output;
 }
 
-std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>>& aVectorsList, const std::vector<double> centersConverted, const double IS_IN){
+std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &cluster_list, const std::vector<double> &centersConverted, const double &IS_IN){
     const double Is_in = IS_IN;
     std::vector<double> aTempVector;                     // vector -->  {}
 
     // CHECK IF THE CLUSTER EXISTS IN THE cluster_centers LIST
-    if (Is_in == 0 && aVectorsList.empty()){             // For the first iteration/cluster                  
+    if (Is_in == 0 && cluster_list.empty()){             // For the first iteration/cluster                  
         aTempVector.push_back(ID);                       // vector -->  {ID}
     }
     else if (Is_in > 100000){                            // if it's a timestamp
         ID++;                                            // ----CREATE CLUSTER ID----
         aTempVector.push_back(ID);                       // vector -->  {ID}
     }
-    else if (Is_in < 100000 && !aVectorsList.empty()){ // if it's an ID from condition: distance < limit
+    else if (Is_in < 100000 && !cluster_list.empty()){ // if it's an ID from condition: distance < limit
         unsigned int indexOfClusterFound;
         // ---replace AFTER ERASING---
         unsigned int ClusterID = 0;
-        for (const std::vector<double> aVector : aVectorsList){
+        for (const std::vector<double> aVector : cluster_list){
             if (aVector[0] == Is_in){
                 indexOfClusterFound = ClusterID;
             }
             ClusterID++;
         }
-        aVectorsList.erase(aVectorsList.begin() + indexOfClusterFound);
+        cluster_list.erase(cluster_list.begin() + indexOfClusterFound);
 
         // ----ASSIGN SAME CLUSTER ID----
         aTempVector.push_back(Is_in);                    // vector -->  {ID}
@@ -307,13 +305,13 @@ std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>>& aVe
     }
 
     // Push back new cluster center, generated with ID, in a VECTOR, alongside with timestamp
-    aVectorsList.push_back(aTempVector);
+    cluster_list.push_back(aTempVector);
 
-    return aVectorsList;
+    return cluster_list;
 }
 
 
-std::vector<std::vector<double>>& clusters_assign_process(const VectorXd& cluster, MyCluster ClusterCenter){
+std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
     double Is_in;
 
     // Convert cen vector from eigen vector to std::vector
@@ -324,14 +322,14 @@ std::vector<std::vector<double>>& clusters_assign_process(const VectorXd& cluste
     cluster_converted.push_back(t_stamp.toSec()); // Add the timestamp to new cluster
 
     // STORE THE # OF EVENTS WHICH GENERATED THIS CLUSTER
-    cluster_converted.push_back(ClusterCenter.getN());
+    cluster_converted.push_back(ClusterCenters.getN());
 
     // IS THE NEW CLUSTER ALREADY LISTED??
     const std::vector<double> updatedVector = is_cluster_in(cluster_converted, cluster_centers);
 
     unsigned int iter = 0;
     for ( const double aFeature : updatedVector){
-        if (iter == 0){ Is_in = aFeature;} //Get is_in value
+        if (iter == 0){ Is_in = aFeature;} // Get is_in value
         if (iter == 1){ cluster_converted.push_back(aFeature);} // add speed to data
         iter++;
     }
@@ -342,21 +340,21 @@ std::vector<std::vector<double>>& clusters_assign_process(const VectorXd& cluste
     return cluster_centers;
 }
 
-std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<double>>& cluster_centers){
+std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<double>> &cluster_list){
     Improve* opt;
     Tracking* tracking;
     // REMOVAL OF CLUSTERS THAT HAVE STOPPED BEING TRACKED
-    opt->remover(cluster_centers);
+    opt->remover(cluster_list);
 
     if (terminal){
         std::cout << "\n\n----- 🟣 ORIGINAL CLUSTERS ----\n";
     }
 
     // KALMAN FILTERING --->> improve clusters by precision
-    if (!cluster_centers.empty()){
+    if (!cluster_list.empty()){
         // SORT before using kalman filter
-        sort(cluster_centers.begin(), cluster_centers.end());
-        opt->kalmanfilter(cluster_centers, kalman_centers);
+        sort(cluster_list.begin(), cluster_list.end());
+        opt->kalmanfilter(cluster_list, kalman_centers);
 
         // Terminal View of kalman_centers
         if (terminal){
@@ -375,16 +373,16 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
     // TERMINAL VIEW of list created
     if (terminal){
         std::cout << "\n----- 🟢 CLUSTERS LIST CREATED --\n";
-        show_clusters(cluster_centers);
+        show_clusters(cluster_list);
     }
 
     // ---- VISUALIZATION OF CLUSTERS CREATED ----
-    visualizer(kalman_centers, cluster_centers, object_coordinates); // orange and green
+    visualizer(kalman_centers, cluster_list, object_coordinates); // orange and green
 
     // USE THE NEW KALMAN CENTERS for next iteration (FEEDBACK)
-    cluster_centers.erase(cluster_centers.begin(), cluster_centers.end());
+    cluster_list.erase(cluster_list.begin(), cluster_list.end());
     for (const std::vector<double> aVector : kalman_centers){
-        cluster_centers.push_back(aVector);
+        cluster_list.push_back(aVector);
     }
 
     delete opt;
@@ -393,7 +391,7 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
     return kalman_centers;
 }
 
-void imageCallback(const sensor_msgs::ImageConstPtr& msg){
+void imageCallback(const sensor_msgs::ImageConstPtr &msg){
     try{
         im2 = cv_bridge::toCvCopy(msg, "rgb8")->image;
         cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
@@ -404,7 +402,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg){
 }
 
 
-void eventCallback(const dvs_msgs::EventArray::ConstPtr& msg){
+void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg){
     deque<double> ev(4, 0.0);
     for (const auto e : msg->events){
         ev[0] = e.ts.toSec();
@@ -418,9 +416,9 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr& msg){
     }    
 
     int minN = eclustering->getMinN(); // 18 (take a look at the .launch file)
-    for (auto ClusterCenter : eclustering->clusters){
-        if (ClusterCenter.getN() >= minN){ // if the cluster contains more than 15 events
-            Eigen::VectorXd cen(ClusterCenter.getClusterCentroid());
+    for (auto ClusterCenters : eclustering->clusters){
+        if (ClusterCenters.getN() >= minN){ // if the cluster contains more than 15 events
+            Eigen::VectorXd cen(ClusterCenters.getClusterCentroid());
 
                 if (!sort_by_events){
                     // original clusters (without IDs)
@@ -433,7 +431,7 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr& msg){
                 }
 
                 // Assign cluster
-                clusters_assign_process(cen, ClusterCenter);
+                clusters_assign_process(cen, ClusterCenters);
         }
     }
 

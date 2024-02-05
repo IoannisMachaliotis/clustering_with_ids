@@ -24,6 +24,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  include/clustering_with_ids
 )
 
 
@@ -31,6 +32,8 @@ include_directories(
 add_library(clustering_with_ids
   src/MyCluster.cpp
   src/AEClustering.cpp
+  src/Tracking.cpp
+  src/Improve.cpp
 )
 
 add_executable(clustering_with_ids_node src/test_aeclustering.cpp)

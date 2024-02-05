@@ -17,7 +17,7 @@ AEClustering::AEClustering()
     eventId_ = 0;
 }
 
-void AEClustering::init(int szBuffer, double radius, int kappa, double alpha, int minN)
+void AEClustering::init(int szBuffer, double radius, double kappa, double alpha, const int minN)
 {
     szBuffer_ = szBuffer;
     radius_ = radius;
@@ -106,7 +106,7 @@ int AEClustering::getLastUpdatedClusterIdx()
     return lastUpdatedCluster_;
 }
 
-int AEClustering::getMinN()
+const int AEClustering::getMinN()
 {
     return minN_;
 }

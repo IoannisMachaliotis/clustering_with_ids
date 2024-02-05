@@ -16,7 +16,7 @@ Clone the repository to your ROS workspace (e.g ~/catkin_ws/src)
     $ sudo git clone https://github.com/IoannisMachaliotis/clustering_with_ids.git
     $ catkin build clustering_with_ids
     
-    (VERY IMPORTANT to source the new setup.bash instead of the intial ~/.bashrc)
+    (VERY IMPORTANT to source the new setup.bash(in every terminal: roscore, bagfile play, renderer, id_speed_tracker) instead of the intial ~/.bashrc)
     $ source ~/catkin_ws/devel/setup.bash 
 
 The package includes a wrapper as example to use the tracker algorithm. The wrapper receives the input using the `dvs_msgs/EventArray` message format. To try the clustering, connect your camera and run the driver. Then type:

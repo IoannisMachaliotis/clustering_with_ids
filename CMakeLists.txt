@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
 )
 
-
 catkin_package(CATKIN_DEPENDS std_msgs dvs_msgs)
 
 include_directories(
@@ -25,9 +24,7 @@ include_directories(
   ${EIGEN3_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   include/clustering_with_ids
-)
-
-
+  )
 
 add_library(clustering_with_ids
   src/MyCluster.cpp
@@ -36,5 +33,5 @@ add_library(clustering_with_ids
   src/Improve.cpp
 )
 
-add_executable(clustering_with_ids_node src/test_aeclustering.cpp)
+add_executable(clustering_with_ids_node src/id_speed_tracker.cpp)
 target_link_libraries(clustering_with_ids_node clustering_with_ids ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})

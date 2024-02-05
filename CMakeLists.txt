@@ -33,5 +33,5 @@ add_library(clustering_with_ids
   src/AEClustering.cpp
 )
 
-add_executable(test_grvc_e_clustering_node src/test_aeclustering.cpp)
-target_link_libraries(test_grvc_e_clustering_node clustering_with_ids ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})
+add_executable(clustering_with_ids_node src/test_aeclustering.cpp)
+target_link_libraries(clustering_with_ids_node clustering_with_ids ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})

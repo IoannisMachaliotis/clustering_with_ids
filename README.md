@@ -18,7 +18,7 @@ Clone the repository to your ROS workspace (e.g ~/catkin_ws/src)
 **VERY IMPORTANT** to source the new setup.bash instead of the initial ~/.bashrc **AND** to build all packages only from the ~/catkin_ws directory
 (in **every** terminal: roscore, bagfile play, renderer, id_speed_tracker)  
 
-    $ cd ../
+    $ cd ..
     $ catkin build clustering_with_ids
     $ source /devel/setup.bash 
 

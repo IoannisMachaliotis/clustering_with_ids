@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(clustering_with_ids)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -march=native" )
@@ -31,6 +31,7 @@ add_library(clustering_with_ids
   src/AEClustering.cpp
   src/Tracking.cpp
   src/Improve.cpp
+  src/TerminalInfo.cpp
 )
 
 add_executable(clustering_with_ids_node src/id_speed_tracker.cpp)

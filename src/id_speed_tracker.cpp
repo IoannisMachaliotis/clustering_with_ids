@@ -5,9 +5,12 @@
 #include <iterator>
 #include <sensor_msgs/Image.h>
 #include <dvs_msgs/EventArray.h>
+
+// Project libraries
 #include "clustering_with_ids/AEClustering.h"
 #include "clustering_with_ids/Improve.h"
 #include "clustering_with_ids/Tracking.h"
+#include "clustering_with_ids/TerminalInfo.h"
 
 // --------Libraries added---------
 #include <vector>
@@ -40,77 +43,6 @@ AEClustering *eclustering(new AEClustering);
 
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;
-
-
-// ----------- FUNCTIONS FOR DEBUGGING -----------------
-void show_clusters(const std::vector<std::vector<double>> &cluster_list){
-    // show ID and center of new clusters
-    for (const std::vector<double> aCluster : cluster_list){
-        std::size_t featureIterator = 0;
-        for (const double aVector : aCluster){
-            if (featureIterator <= 2 /*|| featureIterator ==4*/ || featureIterator == 5){
-                if (featureIterator == 0){
-                    std::cout << "ID:";
-                }
-                if (featureIterator == 1){
-                    std::cout << "x:";
-                }
-                if (featureIterator == 2){
-                    std::cout << "y:";
-                }
-                if (featureIterator == 3){
-                    std::cout << "t:";
-                }
-                if (featureIterator == 4){
-                    std::cout << "#ev:";
-                }
-                if (featureIterator == 5){
-                    std::cout << "speed:";
-                }
-                std::cout << aVector;
-                if (featureIterator != 5){
-                    if (featureIterator == 0){
-                        std::cout << "  ";
-                    }
-                    else{
-                        std::cout << ",  ";
-                    }
-                }
-            }
-            featureIterator++;
-        }
-        std::cout << "\n";
-    }
-}
-
-void show_vector(const std::vector<double> &aVector){
-    std::size_t iterator = 0;
-    for (const double aCoordinate : aVector){
-        std::cout << aCoordinate;
-        std::cout << ", ";
-        iterator++;
-    }
-    std::cout << "\n";
-}
-void show_centers(const std::vector<std::vector<double>> &cluster_list){
-    //show ID and center of new clusters
-    for (const std::vector<double> aVector : cluster_list){
-        std::size_t featureIterator = 0;
-        for (const double aCenter : aVector){   
-            if (featureIterator == 0){std::cout << "x:";}
-            if (featureIterator == 1){std::cout << "y:";}
-            std::cout << " " << aCenter;
-            if (featureIterator!=1){
-                if (featureIterator == 0){std::cout << "  ";}
-                else {std::cout << ",  ";}
-            }
-            featureIterator++;
-        }
-    std::cout << "\n";
-    }
-}
-// ------------------------------------------------------
-
 
 void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const MatrixXd &object_coordinates){
     Tracking* tracking;
@@ -343,6 +275,7 @@ std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluste
 std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<double>> &cluster_list){
     Improve* opt;
     Tracking* tracking;
+    TerminalInfo* infoT;
     // REMOVAL OF CLUSTERS THAT HAVE STOPPED BEING TRACKED
     opt->remover(cluster_list);
 
@@ -359,7 +292,7 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
         // Terminal View of kalman_centers
         if (terminal){
             std::cout << "\n----- 🟠 KALMAN CENTERS ------\n";
-            show_clusters(kalman_centers);
+            infoT->show_clusters(kalman_centers);
         }
     }
     else{
@@ -373,7 +306,7 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
     // TERMINAL VIEW of list created
     if (terminal){
         std::cout << "\n----- 🟢 CLUSTERS LIST CREATED --\n";
-        show_clusters(cluster_list);
+        infoT->show_clusters(cluster_list);
     }
 
     // ---- VISUALIZATION OF CLUSTERS CREATED ----
@@ -387,6 +320,7 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
 
     delete opt;
     delete tracking;
+    delete infoT;
 
     return kalman_centers;
 }

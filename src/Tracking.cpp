@@ -8,10 +8,10 @@ std::vector<std::vector<double>> speed_centers;
 
 VectorXd& Tracking::track_by_most_events(const std::vector<std::vector<double> > &cluster_list, VectorXd &moving_obj){
     double most_events = -1;
-    for (const std::vector<double> aVector : cluster_list){
+    for (const std::vector<double> &aVector : cluster_list){
         bool moreEventsDetected = false;
         int aFeatureIterator = 0;
-        for (const double aFeature : aVector){
+        for (const double &aFeature : aVector){
             if (aFeatureIterator == 4){
                 if (most_events < aFeature){
                     most_events = aFeature;
@@ -49,9 +49,9 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
     
     // Convert to Eigen matrix
     int i = 0;
-    for (const std::vector<double> aVector : kalman_centers){ 
+    for (const std::vector<double> &aVector : kalman_centers){ 
         int j = 0;
-        for (const double aFeature : aVector){
+        for (const double &aFeature : aVector){
             kalman_centers_mat(i, j) = aFeature;
             j++;
         }
@@ -83,10 +83,10 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
 
     // Get the first one(with higher speed) which must be the moving object
     int ObjectIterator = 0;
-    for (const std::vector<double> aVector : speed_centers){
+    for (const std::vector<double> &aVector : speed_centers){
         int aFeatureIterator = 0;
         if (ObjectIterator <= num_of_obj-1){ // Specify the number of moving objects that you want to detect
-            for ( const double aFeature : aVector){
+            for ( const double &aFeature : aVector){
                 if ( aFeatureIterator == 0){ speed_of_cluster = aFeature;} // Get the speed of each cluster
                 if (speed_of_cluster > speed_limit){
                     if (ObjectIterator==0){

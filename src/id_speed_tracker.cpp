@@ -49,7 +49,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
     double x1, y1, x2, y2;
 
     if (clusters_list_created_visual){
-        for (const std::vector<double> aVector : cluster_list){                                                                             // kalman_centers with IDs
+        for (const std::vector<double> &aVector : cluster_list){                                                                             // kalman_centers with IDs
             cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(0, 255, 0), -1, 16); // orange
         }
     }
@@ -66,7 +66,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
         }
     }
     else{
-        for (const std::vector<double> aVector : kalman_centers){                                                                               // kalman_centers with IDs
+        for (const std::vector<double> &aVector : kalman_centers){                                                                               // kalman_centers with IDs
             cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(255, 150, 0), -1, 16); // orange
 
             // -------- my_radius --------
@@ -146,7 +146,7 @@ std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std:
 
     int featureIterator = 0;
     // Get info from centersConverted
-    for (double aFeature : aVector){
+    for (double &aFeature : aVector){
         if (featureIterator == 0){
             x_v = aFeature;
         }
@@ -160,14 +160,14 @@ std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std:
     }
 
     // Get info from cluster_centers
-    for (const std::vector<double> aVector : cluster_list){
+    for (const std::vector<double> &aVector : cluster_list){
         double x;
         double y;
         double Id;
         double t_prev;
 
         int featureIteratorII = 0;
-        for (const double aCenter : aVector){
+        for (const double &aCenter : aVector){
             if (featureIteratorII == 0){
                 Id = aCenter;
             }
@@ -221,7 +221,7 @@ std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &clu
         unsigned int indexOfClusterFound;
         // ---replace AFTER ERASING---
         unsigned int ClusterID = 0;
-        for (const std::vector<double> aVector : cluster_list){
+        for (const std::vector<double> &aVector : cluster_list){
             if (aVector[0] == Is_in){
                 indexOfClusterFound = ClusterID;
             }
@@ -232,7 +232,7 @@ std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &clu
         // ----ASSIGN SAME CLUSTER ID----
         aTempVector.push_back(Is_in);                    // vector -->  {ID}
     }
-    for (const double aCenter : centersConverted){
+    for (const double &aCenter : centersConverted){
         aTempVector.push_back(aCenter);                  // vector -->  {ID, x_new, y_new, t_stamp}
     }
 
@@ -260,7 +260,7 @@ std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluste
     const std::vector<double> updatedVector = is_cluster_in(cluster_converted, cluster_centers);
 
     unsigned int iter = 0;
-    for ( const double aFeature : updatedVector){
+    for ( const double &aFeature : updatedVector){
         if (iter == 0){ Is_in = aFeature;} // Get is_in value
         if (iter == 1){ cluster_converted.push_back(aFeature);} // add speed to data
         iter++;
@@ -338,7 +338,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
 
 void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg){
     deque<double> ev(4, 0.0);
-    for (const auto e : msg->events){
+    for (const auto &e : msg->events){
         ev[0] = e.ts.toSec();
         ev[1] = e.x;
         ev[2] = e.y;
@@ -350,7 +350,7 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg){
     }    
 
     int minN = eclustering->getMinN(); // 18 (take a look at the .launch file)
-    for (auto ClusterCenters : eclustering->clusters){
+    for (auto &ClusterCenters : eclustering->clusters){
         if (ClusterCenters.getN() >= minN){ // if the cluster contains more than 15 events
             Eigen::VectorXd cen(ClusterCenters.getClusterCentroid());
 

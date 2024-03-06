@@ -125,7 +125,7 @@ std::vector<std::vector<double> >& Improve::remover(std::vector<std::vector<doub
     int counter = 0;
     for (const std::vector<double> &aVector : cluster_list){
         int aFeatureIterator = 0;
-        for (const double i : aVector){
+        for (const double &i : aVector){
             if (aFeatureIterator == 3){
                 const ros::Time checkpoint = ros::Time::now();
                 duration = checkpoint.toSec() -  i;

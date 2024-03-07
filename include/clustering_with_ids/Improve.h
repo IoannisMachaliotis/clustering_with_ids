@@ -16,7 +16,8 @@ cv::Mat im2;
 // -------------- KALMAN FILTER VARIABLES ----------------
 std::vector<std::vector<double>> kalman_centers; // Predicted centers
 
-struct Improve {
+struct Improve
+{
     std::vector<std::vector<double> >& remover(std::vector<std::vector<double> > &cluster_list);
     std::vector<std::vector<double> >& kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers);
 };

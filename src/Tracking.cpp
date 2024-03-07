@@ -6,28 +6,35 @@ std::vector<std::vector<double>> speed_centers;
 
 // --------- TRACKING Methods --------
 
-VectorXd& Tracking::track_by_most_events(const std::vector<std::vector<double> > &cluster_list, VectorXd &moving_obj){
+VectorXd& Tracking::track_by_most_events(const std::vector<std::vector<double> > &cluster_list, VectorXd &moving_obj)
+{
     double most_events = -1;
-    for (const std::vector<double> &aVector : cluster_list){
+    for (const std::vector<double> &aVector : cluster_list)
+    {
         bool moreEventsDetected = false;
         int aFeatureIterator = 0;
-        for (const double &aFeature : aVector){
-            if (aFeatureIterator == 4){
-                if (most_events < aFeature){
+        for (const double &aFeature : aVector)
+        {
+            if (aFeatureIterator == 4)
+            {
+                if (most_events < aFeature)
+                {
                     most_events = aFeature;
                     moreEventsDetected = true;
                 }
             }
             aFeatureIterator++;
         }
-        if (moreEventsDetected){
+        if (moreEventsDetected)
+        {
             moving_obj << aVector[1], aVector[2], most_events; // x, y, #ev
         }
     }
     return moving_obj;
 }
 
-MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalman_centers){
+MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalman_centers)
+{
     // ------------ Calculate speed among all clusters ---------------
     const unsigned int size = kalman_centers.size();
     MatrixXd kalman_centers_mat(size,6);
@@ -38,8 +45,10 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
     double x1,y1,x2,y2, speed_of_cluster;
 
     // INITALIZE WITH ZEROS
-    for ( int i = 0; i <= size-1 ; i++){
-        for ( int j = 0; j <= 5; j++){ // for all 6 data
+    for ( int i = 0; i <= size-1 ; i++)
+    {
+        for ( int j = 0; j <= 5; j++)  // for all 6 data
+        {
             kalman_centers_mat(i,j) = 0;
         }
         col_i(i) = 0;
@@ -49,9 +58,11 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
     
     // Convert to Eigen matrix
     int i = 0;
-    for (const std::vector<double> &aVector : kalman_centers){ 
+    for (const std::vector<double> &aVector : kalman_centers)
+    { 
         int j = 0;
-        for (const double &aFeature : aVector){
+        for (const double &aFeature : aVector)
+        {
             kalman_centers_mat(i, j) = aFeature;
             j++;
         }
@@ -60,7 +71,8 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
 
     // SWAP LAST COLUMN WITH FIRST ONE
     last_col = kalman_centers_mat.col(5);
-    for (int ii = 4; ii >= 0; ii--){ //size of data -2
+    for (int ii = 4; ii >= 0; ii--) //size of data -2
+    {
         col_i = kalman_centers_mat.col(ii+1);
         col_j = kalman_centers_mat.col(ii);
         kalman_centers_mat.col(ii) = col_i;
@@ -70,9 +82,11 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
 
     speed_centers.erase(speed_centers.begin(), speed_centers.end());
     // Convert from Eigen to std again
-    for ( int i = 0; i <= size-1 ; i++){
+    for ( int i = 0; i <= size-1 ; i++)
+    {
         temp_data = {};
-        for ( int j = 0; j <= 5; j++){
+        for ( int j = 0; j <= 5; j++)
+        {
             temp_data.push_back(kalman_centers_mat(i,j));
         }
         speed_centers.push_back(temp_data);
@@ -83,19 +97,40 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
 
     // Get the first one(with higher speed) which must be the moving object
     int ObjectIterator = 0;
-    for (const std::vector<double> &aVector : speed_centers){
+    for (const std::vector<double> &aVector : speed_centers)
+    {
         int aFeatureIterator = 0;
-        if (ObjectIterator <= num_of_obj-1){ // Specify the number of moving objects that you want to detect
-            for ( const double &aFeature : aVector){
-                if ( aFeatureIterator == 0){ speed_of_cluster = aFeature;} // Get the speed of each cluster
-                if (speed_of_cluster > speed_limit){
-                    if (ObjectIterator==0){
-                        if ( aFeatureIterator == 2){x1 = aFeature;}
-                        if ( aFeatureIterator == 3){y1 = aFeature;}
+        if (ObjectIterator <= num_of_obj-1) // Specify the number of moving objects that you want to detect
+        {
+            for ( const double &aFeature : aVector)
+            {
+                if ( aFeatureIterator == 0)
+                {
+                    speed_of_cluster = aFeature; // Get the speed of each cluster
+                }
+                if (speed_of_cluster > speed_limit)
+                {
+                    if (ObjectIterator==0)
+                    {
+                        if ( aFeatureIterator == 2)
+                        {
+                            x1 = aFeature;
+                        }
+                        if ( aFeatureIterator == 3)
+                        {
+                            y1 = aFeature;
+                        }
                     }
-                    if (ObjectIterator==1){
-                        if ( aFeatureIterator == 2){x2 = aFeature;}
-                        if ( aFeatureIterator == 3){y2 = aFeature;}
+                    if (ObjectIterator==1)
+                    {
+                        if ( aFeatureIterator == 2)
+                        {
+                            x2 = aFeature;
+                        }
+                        if ( aFeatureIterator == 3)
+                        {
+                            y2 = aFeature;
+                        }
                     }
                 }
                 aFeatureIterator++;
@@ -105,6 +140,6 @@ MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalm
     }
     
     object_coordinates << x1, y1,
-                            x2, y2;
+                          x2, y2;
     return object_coordinates;
 }

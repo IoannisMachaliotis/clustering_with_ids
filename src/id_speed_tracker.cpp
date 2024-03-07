@@ -44,33 +44,41 @@ AEClustering *eclustering(new AEClustering);
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;
 
-void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const MatrixXd &object_coordinates){
+void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const MatrixXd &object_coordinates)
+{
     Tracking* tracking;
     double x1, y1, x2, y2;
 
-    if (clusters_list_created_visual){
-        for (const std::vector<double> &aVector : cluster_list){                                                                             // kalman_centers with IDs
+    if (clusters_list_created_visual)
+    {
+        for (const std::vector<double> &aVector : cluster_list)
+        {                                                                             // kalman_centers with IDs
             cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(0, 255, 0), -1, 16); // orange
         }
     }
 
-    if (sort_by_events){
+    if (sort_by_events)
+    {
         VectorXd moving_obj(3);
         tracking->track_by_most_events(kalman_centers, moving_obj);
 
         const unsigned int most_events = moving_obj(2);
-        if (most_events > percentage_of_filtering * szBuffer){                                                                        // filter out non moving objects
+        if (most_events > percentage_of_filtering * szBuffer)
+        {                                                                        // filter out non moving objects
             cv::Point pt1(moving_obj(0) - radius, moving_obj(1) - (radius + 5)); // its top left corner...
             cv::Point pt2(moving_obj(0) + radius, moving_obj(1) + (radius + 5)); // its bottom right corner.
             cv::rectangle(im2, pt1, pt2, cv::Scalar(0, 255, 0));                 // green
         }
     }
-    else{
-        for (const std::vector<double> &aVector : kalman_centers){                                                                               // kalman_centers with IDs
+    else
+    {
+        for (const std::vector<double> &aVector : kalman_centers)
+        {                                                                               // kalman_centers with IDs
             cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(255, 150, 0), -1, 16); // orange
 
             // -------- my_radius --------
-            if (radius_visual){
+            if (radius_visual)
+            {
                 cv::circle(im2, cv::Point(aVector[1], aVector[2]), my_radius, cv::Scalar(100, 0, 100), 0, 16); // dark purple
             }
 
@@ -89,10 +97,12 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
         y1 = object_coordinates(0,1);
         y2 = object_coordinates(1,1);
 
-        if (x1>0.1 &&  y1>0.1){
+        if (x1>0.1 &&  y1>0.1)
+        {
             cv::circle(im2, cv::Point(x1, y1), 10, cv::Scalar(255, 150, 0), 0, 16); // orange
         }
-        if (x2>0.1 && y2>0.1){
+        if (x2>0.1 && y2>0.1)
+        {
             cv::circle(im2, cv::Point(x2, y2), 10, cv::Scalar(255, 150, 0), 0, 16); // orange
         }
 
@@ -102,9 +112,11 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
         delete tracking;
     }
 
-    if (screen_details){
+    if (screen_details)
+    {
         // In case of sorting by events method
-        if (sort_by_events){
+        if (sort_by_events)
+        {
             cv::Point pt1(184, 5);
             cv::Point pt2(188, 11);
             cv::rectangle(im2, pt1, pt2, cv::Scalar(0, 255, 0));
@@ -113,7 +125,8 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
             std::string s3 = "Percentage of filtering: " + to_string(ss) + "%";
             cv::putText(im2, s3, cv::Point(190, 20), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
         }
-        else{
+        else
+        {
             // ------ Clusters info -------
             cv::circle(im2, cv::Point(225, 7), 3, cv::Scalar(200, 0, 200), -1, 16); // purple
             cv::putText(im2, "Original clusters", cv::Point(230, 10), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
@@ -133,7 +146,8 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
 }
 
 // ---------- CLUSTERS PROCESS FUNCTIONS ------------
-std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list) {
+std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list)
+{
     std::vector<double> Output;
     double IS_IN = 0;
     double x_v;
@@ -146,38 +160,48 @@ std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std:
 
     int featureIterator = 0;
     // Get info from centersConverted
-    for (double &aFeature : aVector){
-        if (featureIterator == 0){
+    for (double &aFeature : aVector)
+    {
+        if (featureIterator == 0)
+        {
             x_v = aFeature;
         }
-        if (featureIterator == 1){
+        if (featureIterator == 1)
+        {
             y_v = aFeature;
         }
-        if (featureIterator == 2){
+        if (featureIterator == 2)
+        {
             timeOfNew = aFeature;
         }
         featureIterator++;
     }
 
     // Get info from cluster_centers
-    for (const std::vector<double> &aVector : cluster_list){
+    for (const std::vector<double> &aVector : cluster_list)
+    {
         double x;
         double y;
         double Id;
         double t_prev;
 
         int featureIteratorII = 0;
-        for (const double &aCenter : aVector){
-            if (featureIteratorII == 0){
+        for (const double &aCenter : aVector)
+        {
+            if (featureIteratorII == 0)
+            {
                 Id = aCenter;
             }
-            if (featureIteratorII == 1){
+            if (featureIteratorII == 1)
+            {
                 x = aCenter;
             }
-            if (featureIteratorII == 2){
+            if (featureIteratorII == 2)
+            {
                 y = aCenter;
             }
-            if (featureIteratorII == 3){
+            if (featureIteratorII == 3)
+            {
                 t_prev = aCenter;
             }
             featureIteratorII++;
@@ -185,18 +209,21 @@ std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std:
         // Find the distance of each cluster from the new cluster
         const double distanceFromNew = sqrt(pow(x - x_v, 2) + pow(y - y_v, 2));
 
-        if (distanceFromNew < InitializedMaxDist){                 // find the one who is closer
+        if (distanceFromNew < InitializedMaxDist) // find the one who is closer
+        {
             InitializedMaxDist = distanceFromNew;
             IDx = Id;
             t_previous = t_prev;
         }
     }
-    if (InitializedMaxDist <= my_radius){   // assume it's the same cluster
+    if (InitializedMaxDist <= my_radius)    // assume it's the same cluster
+    {
         IS_IN = IDx;   
         dt = timeOfNew - t_previous;        // Calculate time difference
         speed = InitializedMaxDist/dt;               // Calculate speed
     }
-    else{                                   // assume it's a new one
+    else
+    {                                       // assume it's a new one
         IS_IN = timeOfNew;
     }
     Output.push_back(IS_IN);        
@@ -205,24 +232,30 @@ std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std:
     return Output;
 }
 
-std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &cluster_list, const std::vector<double> &centersConverted, const double &IS_IN){
+std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &cluster_list, const std::vector<double> &centersConverted, const double &IS_IN)
+{
     const double Is_in = IS_IN;
     std::vector<double> aTempVector;                     // vector -->  {}
 
     // CHECK IF THE CLUSTER EXISTS IN THE cluster_centers LIST
-    if (Is_in == 0 && cluster_list.empty()){             // For the first iteration/cluster                  
+    if (Is_in == 0 && cluster_list.empty())              // For the first iteration/cluster 
+    {
         aTempVector.push_back(ID);                       // vector -->  {ID}
     }
-    else if (Is_in > 100000){                            // if it's a timestamp
+    else if (Is_in > 100000)                             // if it's a timestamp
+    {
         ID++;                                            // ----CREATE CLUSTER ID----
         aTempVector.push_back(ID);                       // vector -->  {ID}
     }
-    else if (Is_in < 100000 && !cluster_list.empty()){ // if it's an ID from condition: distance < limit
+    else if (Is_in < 100000 && !cluster_list.empty()) // if it's an ID from condition: distance < limit
+    {
         unsigned int indexOfClusterFound;
         // ---replace AFTER ERASING---
         unsigned int ClusterID = 0;
-        for (const std::vector<double> &aVector : cluster_list){
-            if (aVector[0] == Is_in){
+        for (const std::vector<double> &aVector : cluster_list)
+        {
+            if (aVector[0] == Is_in)
+            {
                 indexOfClusterFound = ClusterID;
             }
             ClusterID++;
@@ -232,7 +265,8 @@ std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &clu
         // ----ASSIGN SAME CLUSTER ID----
         aTempVector.push_back(Is_in);                    // vector -->  {ID}
     }
-    for (const double &aCenter : centersConverted){
+    for (const double &aCenter : centersConverted)
+    {
         aTempVector.push_back(aCenter);                  // vector -->  {ID, x_new, y_new, t_stamp}
     }
 
@@ -260,9 +294,16 @@ std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluste
     const std::vector<double> updatedVector = is_cluster_in(cluster_converted, cluster_centers);
 
     unsigned int iter = 0;
-    for ( const double &aFeature : updatedVector){
-        if (iter == 0){ Is_in = aFeature;} // Get is_in value
-        if (iter == 1){ cluster_converted.push_back(aFeature);} // add speed to data
+    for ( const double &aFeature : updatedVector)
+    {
+        if (iter == 0)
+        {
+            Is_in = aFeature; // Get is_in value
+        }
+        if (iter == 1)
+        {
+          cluster_converted.push_back(aFeature); // add speed to data
+        }
         iter++;
     }
 
@@ -272,39 +313,46 @@ std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluste
     return cluster_centers;
 }
 
-std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<double>> &cluster_list){
+std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<double>> &cluster_list)
+{
     Improve* opt;
     Tracking* tracking;
     TerminalInfo* infoT;
     // REMOVAL OF CLUSTERS THAT HAVE STOPPED BEING TRACKED
     opt->remover(cluster_list);
 
-    if (terminal){
+    if (terminal)
+    {
         std::cout << "\n\n----- 🟣 ORIGINAL CLUSTERS ----\n";
     }
 
     // KALMAN FILTERING --->> improve clusters by precision
-    if (!cluster_list.empty()){
+    if (!cluster_list.empty())
+    {
         // SORT before using kalman filter
         sort(cluster_list.begin(), cluster_list.end());
         opt->kalmanfilter(cluster_list, kalman_centers);
 
         // Terminal View of kalman_centers
-        if (terminal){
+        if (terminal)
+        {
             std::cout << "\n----- 🟠 KALMAN CENTERS ------\n";
             infoT->show_clusters(kalman_centers);
         }
     }
-    else{
+    else
+    {
         kalman_centers.erase(kalman_centers.begin(), kalman_centers.end());
     }
 
-    if (!kalman_centers.empty()){
+    if (!kalman_centers.empty())
+    {
         tracking->object_tracker(kalman_centers);
     }
 
     // TERMINAL VIEW of list created
-    if (terminal){
+    if (terminal)
+    {
         std::cout << "\n----- 🟢 CLUSTERS LIST CREATED --\n";
         infoT->show_clusters(cluster_list);
     }
@@ -314,7 +362,8 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
 
     // USE THE NEW KALMAN CENTERS for next iteration (FEEDBACK)
     cluster_list.erase(cluster_list.begin(), cluster_list.end());
-    for (const std::vector<double> aVector : kalman_centers){
+    for (const std::vector<double> aVector : kalman_centers)
+    {
         cluster_list.push_back(aVector);
     }
 
@@ -325,12 +374,15 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
     return kalman_centers;
 }
 
-void imageCallback(const sensor_msgs::ImageConstPtr &msg){
-    try{
+void imageCallback(const sensor_msgs::ImageConstPtr &msg)
+{
+    try
+    {
         im2 = cv_bridge::toCvCopy(msg, "rgb8")->image;
         cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
     }
-    catch (cv_bridge::Exception &e){
+    catch (cv_bridge::Exception &e)
+    {
         ROS_ERROR("Could not convert from '%s' to 'rgb8'.", msg->encoding.c_str());
     }
 }
@@ -338,28 +390,35 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg){
 
 void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg){
     deque<double> ev(4, 0.0);
-    for (const auto &e : msg->events){
+    for (const auto &e : msg->events)
+    {
         ev[0] = e.ts.toSec();
         ev[1] = e.x;
         ev[2] = e.y;
         ev[3] = e.polarity;
 
-        if ((e.x > 231 || e.x < 229) & (e.y > 203 || e.y < 200)){ // Exclude broken pixel(231,202) due to hardware flaw of davis used at the lab
+        // Exclude broken pixel(231,202) due to hardware flaw of davis used at the lab
+        if ((e.x > 231 || e.x < 229) & (e.y > 203 || e.y < 200))
+        { 
             eclustering->update(ev);
         }
     }    
 
     int minN = eclustering->getMinN(); // 18 (take a look at the .launch file)
-    for (auto &ClusterCenters : eclustering->clusters){
-        if (ClusterCenters.getN() >= minN){ // if the cluster contains more than 15 events
+    for (auto &ClusterCenters : eclustering->clusters)
+    {
+        if (ClusterCenters.getN() >= minN) // if the cluster contains more than 15 events
+        {
             Eigen::VectorXd cen(ClusterCenters.getClusterCentroid());
 
-                if (!sort_by_events){
+                if (!sort_by_events)
+                {
                     // original clusters (without IDs)
                     cv::circle(im2, cv::Point(cen[0], cen[1]), 3, cv::Scalar(200, 0, 200), -1, 16); // purple
 
                     // ------------ radius ----------
-                    if (radius_visual){
+                    if (radius_visual)
+                    {
                         cv::circle(im2, cv::Point(cen[0], cen[1]), radius, cv::Scalar(0, 110, 0), 0, 16); // dark green
                     }
                 }
@@ -377,7 +436,8 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg){
     pubIm.publish(im_msg2);
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
     ros::init(argc, argv, "asyncrhonous_event_based_clustering_node");
     ros::NodeHandle nh_public;
     ros::NodeHandle nh("~");

@@ -146,7 +146,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
 }
 
 // ---------- CLUSTERS PROCESS FUNCTIONS ------------
-std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list)
+[[nodiscard]] std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list)
 {
     std::vector<double> Output;
     double IS_IN = 0;
@@ -277,7 +277,7 @@ std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &clu
 }
 
 
-std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
+[[nodiscard]] std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
     double Is_in;
 
     // Convert cen vector from eigen vector to std::vector

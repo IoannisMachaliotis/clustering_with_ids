@@ -38,7 +38,7 @@ VectorXd v_temp(3);
 MatrixXd previous_KF_centers(CLUSTERS, 2);
 
 
-VectorXd Eucleidian_acc(const std::vector<std::vector<double>> &cluster_list, const std::vector<std::vector<double>> &kalman_centers)
+[[nodiscard]] VectorXd Eucleidian_acc(const std::vector<std::vector<double>> &cluster_list, const std::vector<std::vector<double>> &kalman_centers)
 {
     const unsigned int size = cluster_list.size();
 
@@ -118,7 +118,7 @@ VectorXd Eucleidian_acc(const std::vector<std::vector<double>> &cluster_list, co
 
 // --------------- KALMAN FILTER ----------------
 
-VectorXd& KF_algorithm(const VectorXd &y)
+[[nodiscard]] VectorXd& KF_algorithm(const VectorXd &y)
 {
     x_hat_new = A * x_hat;
     P = A * P * (A.transpose()) + Q;
@@ -129,9 +129,7 @@ VectorXd& KF_algorithm(const VectorXd &y)
     return x_hat_new;
 }
 
-
-// 1st member
-std::vector<std::vector<double> >& Improve::remover(std::vector<std::vector<double> > &cluster_list)
+[[nodiscard]] std::vector<std::vector<double> >& Improve::remover(std::vector<std::vector<double> > &cluster_list)
 {
     const double buff_limit = 0.01; // seconds (how fast to remove)
     double Index;
@@ -160,8 +158,7 @@ std::vector<std::vector<double> >& Improve::remover(std::vector<std::vector<doub
     return cluster_list;
 }
 
-// 2nd member
-std::vector<std::vector<double> >& Improve::kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers)
+[[nodiscard]] std::vector<std::vector<double> >& Improve::kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers)
 {
     // ------------- 2D IMPLEMENTATION of State Space Kalman Filter ---------------
     std::vector<std::vector<double>> position_vector = {};

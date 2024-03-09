@@ -390,7 +390,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
 {
-    deque<double> ev(4, 0.0);
+    std::deque<double> ev(4, 0.0);
     for (const auto &e : msg->events)
     {
         ev[0] = e.ts.toSec();

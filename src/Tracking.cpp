@@ -36,16 +36,16 @@ std::vector<std::vector<double>> speed_centers;
 [[nodiscard]] MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalman_centers)
 {
     // ------------ Calculate speed among all clusters ---------------
-    const unsigned int size = kalman_centers.size();
-    MatrixXd kalman_centers_mat(size,6);
-    VectorXd last_col(size);
-    VectorXd col_i(size);
-    VectorXd col_j(size);
+    const unsigned int sizeOfKFcenters = kalman_centers.size();
+    MatrixXd kalman_centers_mat(sizeOfKFcenters, 6);
+    VectorXd last_col(sizeOfKFcenters);
+    VectorXd col_i(sizeOfKFcenters);
+    VectorXd col_j(sizeOfKFcenters);
     std::vector<double> temp_data;
     double x1,y1,x2,y2, speed_of_cluster;
 
     // INITALIZE WITH ZEROS
-    for ( int i = 0; i <= size-1 ; i++)
+    for ( int i = 0; i <= sizeOfKFcenters - 1 ; i++)
     {
         for ( int j = 0; j <= 5; j++)  // for all 6 data
         {
@@ -71,7 +71,7 @@ std::vector<std::vector<double>> speed_centers;
 
     // SWAP LAST COLUMN WITH FIRST ONE
     last_col = kalman_centers_mat.col(5);
-    for (int ii = 4; ii >= 0; ii--) //size of data -2
+    for (int ii = 4; ii >= 0; ii--) // size of data -2 (?) Specify why
     {
         col_i = kalman_centers_mat.col(ii+1);
         col_j = kalman_centers_mat.col(ii);
@@ -82,7 +82,7 @@ std::vector<std::vector<double>> speed_centers;
 
     speed_centers.erase(speed_centers.begin(), speed_centers.end());
     // Convert from Eigen to std again
-    for ( int i = 0; i <= size-1 ; i++)
+    for ( int i = 0; i <= sizeOfKFcenters - 1 ; i++)
     {
         temp_data = {};
         for ( int j = 0; j <= 5; j++)
@@ -95,7 +95,7 @@ std::vector<std::vector<double>> speed_centers;
 
     object_coordinates << 0, 0, 0, 0;
 
-    // Get the first one(with higher speed) which must be the moving object
+    // Get the first ones(with higher speed) which must be the moving object(s)
     int ObjectIterator = 0;
     for (const std::vector<double> &aVector : speed_centers)
     {
@@ -108,7 +108,7 @@ std::vector<std::vector<double>> speed_centers;
                 {
                     speed_of_cluster = aFeature; // Get the speed of each cluster
                 }
-                if (speed_of_cluster > speed_limit)
+                if (speed_of_cluster > speed_limit) // Specify why we need a speed limit
                 {
                     if (ObjectIterator==0)
                     {

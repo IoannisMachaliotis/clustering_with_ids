@@ -8,11 +8,13 @@ const bool accuracy_visual = false;
 using namespace Eigen;
 
 // ------ For Accuracy -------
+#if accuracy_visual
+    VectorXd Accuracy_mat(CLUSTERS, 1);    // Accuracy
+#endif
+
 MatrixXd Extracted_cen(CLUSTERS, 2);   // Extracted Centers
 MatrixXd Predicted_cen(CLUSTERS, 2);   // Predicted Centers
-VectorXd Accuracy_mat(CLUSTERS, 1);    // Accuracy
 MatrixXd Velocity_mat(CLUSTERS, 2);    // Velocity
-
 const double dt = 20;;
 // -------------- KALMAN FILTER VARIABLES ----------------
 const unsigned int n = 3;                             // Number of states (position, velocity, acceleration)
@@ -32,89 +34,89 @@ VectorXd x_hat_previous(m, n);
 VectorXd y(m);
 VectorXd x0(n);
 
-VectorXd v_temp(3);
+VectorXd v_temp(n);
 
 // ------ For last Kalman Centers (Feedback) ------
 MatrixXd previous_KF_centers(CLUSTERS, 2);
 
-
-[[nodiscard]] VectorXd Eucleidian_acc(const std::vector<std::vector<double>> &cluster_list, const std::vector<std::vector<double>> &kalman_centers)
-{
-    const unsigned int size = cluster_list.size();
-
-    // Initialize Matrices
-    for (int i = 0; i < CLUSTERS; i++)
+#if accuracy_visual
+    [[nodiscard]] VectorXd Eucleidian_acc(const std::vector<std::vector<double>> &cluster_list, const std::vector<std::vector<double>> &kalman_centers)
     {
-        for (int j = 0; j <= 1; j++)
+        const unsigned int sizeOfClustersList = cluster_list.size();
+
+        // Initialize Matrices
+        for (int i = 0; i < CLUSTERS; i++)
         {
-            Extracted_cen(i, j) = 0;
-            Predicted_cen(i, j) = 0;
-            Velocity_mat(i, j) = 0;
+            for (int j = 0; j <= 1; j++)
+            {
+                Extracted_cen(i, j) = 0;
+                Predicted_cen(i, j) = 0;
+                Velocity_mat(i, j) = 0;
+            }
+            Accuracy_mat(i) = 0;
         }
-        Accuracy_mat(i) = 0;
-    }
 
-    // Convert from std to Eigen vectors for processing
-    int counter = 0;
-    for (const std::vector<double> &aVector : cluster_list)
-    {
-        int j = 0;
-        for (const double &aCluster : aVector)
+        // Convert from std to Eigen vectors for processing
+        int counter = 0;
+        for (const std::vector<double> &aVector : cluster_list)
         {
-            if (j != 0)
+            int j = 0;
+            for (const double &aCluster : aVector)
             {
-                Extracted_cen(counter, j - 1) = aCluster;
+                if (j != 0)
+                {
+                    Extracted_cen(counter, j - 1) = aCluster;
+                }
+                j++;
             }
-            j++;
+            counter++;
         }
-        counter++;
-    }
 
-    int counter1 = 0;
-    for (const std::vector<double> &aVector : kalman_centers)
-    {
-        int j = 0;
-        for (const double &aCluster : aVector)
+        int counter1 = 0;
+        for (const std::vector<double> &aVector : kalman_centers)
         {
-            if (j != 0)
+            int j = 0;
+            for (const double &aCluster : aVector)
             {
-                Predicted_cen(counter1, j - 1) = aCluster;
+                if (j != 0)
+                {
+                    Predicted_cen(counter1, j - 1) = aCluster;
+                }
+                j++;
             }
-            j++;
+            counter1++;
         }
-        counter1++;
-    }
 
-    // Calculate Accuracy
-    double x_ex;
-    double y_ex;
-    double x_pr;
-    double y_pr;
-    double distance;
-    for (int i = 0; i < size; i++)
-    {
-        for (int j = 0; j < 1; j++)
+        // Calculate Accuracy
+        double x_ex;
+        double y_ex;
+        double x_pr;
+        double y_pr;
+        double distance;
+        for (int i = 0; i < sizeOfClustersList; i++)
         {
-            if (j == 0)
+            for (int j = 0; j < 1; j++)
             {
-                x_ex = Extracted_cen(i, j);
-                x_pr = Predicted_cen(i, j);
+                if (j == 0)
+                {
+                    x_ex = Extracted_cen(i, j);
+                    x_pr = Predicted_cen(i, j);
+                }
+                if (j == 1)
+                {
+                    y_ex = Extracted_cen(i, j);
+                    y_pr = Predicted_cen(i, j);
+                }
             }
-            if (j == 1)
-            {
-                y_ex = Extracted_cen(i, j);
-                y_pr = Predicted_cen(i, j);
-            }
+            // Eycleidian Distance between corrected and original
+            distance = sqrt(pow(x_ex - x_pr, 2) + pow(y_ex - y_pr, 2));
+            // Accuracy with reference to original clusters
+            Accuracy_mat(i) = 1 - (distance) / sqrt(pow(x_pr, 2) + pow(y_pr, 2));
         }
-        // Eycleidian Distance between corrected and original
-        distance = sqrt(pow(x_ex - x_pr, 2) + pow(y_ex - y_pr, 2));
-        // Accuracy with reference to original clusters
-        Accuracy_mat(i) = 1 - (distance) / sqrt(pow(x_pr, 2) + pow(y_pr, 2));
+
+        return Accuracy_mat;
     }
-
-    return Accuracy_mat;
-}
-
+#endif
 
 // --------------- KALMAN FILTER ----------------
 
@@ -122,8 +124,8 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
 {
     x_hat_new = A * x_hat;
     P = A * P * (A.transpose()) + Q;
-    K = (P * C.transpose()) * (C * P * C.transpose() + R).inverse();
-    P = (I - K * C) * P * (I - K * C).transpose() + K * R * K.transpose();
+    K = (P * C.transpose()) * (C * P * (C.transpose()) + R).inverse();
+    P = (I - K * C) * P * ((I - K * C).transpose()) + K * R * (K.transpose());
     x_hat_new += K * (y - C * x_hat_new);
 
     return x_hat_new;
@@ -132,7 +134,7 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
 [[nodiscard]] std::vector<std::vector<double> >& Improve::remover(std::vector<std::vector<double> > &cluster_list)
 {
     const double buff_limit = 0.01; // seconds (how fast to remove)
-    double Index;
+    int Index;
     double duration = 0;
 
     int counter = 0;
@@ -167,7 +169,6 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     std::vector<double> temporary_t_stamp = {};
     std::vector<double> temporary_speed = {};
     // ------- OBTAIN info FROM cluster_list(to assign back afterwards) --------
-    int counter1 = 0;
     for (const std::vector<double> &aVector : cluster_list)
     {
         std::vector<double> temp_xy = {};
@@ -179,7 +180,7 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
                 temporary_IDs.push_back(aFeature);
             }
             if (aFeatureIterator == 1 || aFeatureIterator == 2)
-            {                   // 2D(x&y_axis_position)
+            {                             // 2D(x&y_axis_position)
                 temp_xy.push_back(aFeature);
             }
             if (aFeatureIterator == 3)
@@ -197,7 +198,6 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
             aFeatureIterator++;
         }
         position_vector.push_back(temp_xy);
-        counter1++;
     }
 
     // CONVERT BACK TO EIGEN MATRICES
@@ -208,14 +208,14 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     VectorXd temp_speed(position_vector.size(),1);       // speed
 
     int counter_1 = 0;
-    for (double &i : temporary_IDs)
-    {                      // IDs
+    for (double &i : temporary_IDs)                            // IDs
+    {
         temp_IDs(counter_1) = i;
         counter_1++;
     }
     int counter_2 = 0;
-    for (const std::vector<double> &aVector : position_vector)
-    {           // Position
+    for (const std::vector<double> &aVector : position_vector) // Position
+    {
         int j = 0;
         for (const double &aCluster : aVector)
         {
@@ -225,19 +225,19 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
         counter_2++;
     }
     int counter_3 = 0;
-    for (const double &t_stamp : temporary_t_stamp)                  // t_stamps
+    for (const double &t_stamp : temporary_t_stamp)             // t_stamps
     {
         temp_t_stamp(counter_3) = t_stamp;
         counter_3++;
     }
     int counter_4 = 0;
-    for (const double &NumOfEvents : temporary_num_of_ev)            // # of events
+    for (const double &NumOfEvents : temporary_num_of_ev)        // # of events
     {
         temp_num_ev(counter_4) = NumOfEvents;
         counter_4++;
     }
     int counter_5 = 0;
-    for (const double &speed : temporary_speed)                      // speed
+    for (const double &speed : temporary_speed)                  // speed
     {
         temp_speed(counter_5) = speed;
         counter_5++;
@@ -248,20 +248,20 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
 
     // Discrete LTI projectile motion, measuring position only
     A << 1, dt, 0,
-        0, 1, dt,
-        0, 0, 1;     // 3x3
+         0, 1, dt,
+         0, 0, 1;     // 3x3
     C << 1, 1, 1;    // 3x1
     I.setIdentity(); // Identity Matrix
 
     // Covariance matrices Based on my data
     Q << 0.5 * pow(dt, 2), 0.5 * pow(dt, 2), .0,
-        0.5 * pow(dt, 2), 0.5 * pow(dt, 2), .0,                    // Mean of measurements covariance
+         0.5 * pow(dt, 2), 0.5 * pow(dt, 2), .0,                    // Mean of measurements covariance
         .0, .0, .0;
 
     R << 1;           // Observation Covariance
     P << .1, .1, .1,
-        .1, 10000, 1, // Current State covariance
-        .1, 1, 100;
+         .1, 10000, 1, // Current State covariance
+         .1, 1, 100;
 
     // ----- ESTIMATE KALMAN CENTERS based on the info obtained ------
     if (POS_MEAS_MAT_2D.isZero() == 0)                              // If there is any cluster in Eigen Matrix
@@ -355,8 +355,8 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     }
 
     // Accuracy measurement
+#if accuracy_visual
     Accuracy_mat << Eucleidian_acc(cluster_list, kalman_centers);
-
     // Choose if you want accuracy visualized
     if (accuracy_visual)
     {
@@ -372,5 +372,6 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
         }
         std::cout << "Accuracy for each cluster is:\n" << Accuracy_mat << "\n";
     }
+#endif
     return kalman_centers;
 }

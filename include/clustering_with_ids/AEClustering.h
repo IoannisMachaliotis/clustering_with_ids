@@ -1,8 +1,8 @@
-#pragma once
 #include "MyCluster.h"
 
 #ifndef AECLUSTERING_CLASS_H
 #define AECLUSTERING_CLASS_H
+#pragma once
 
 class AEClustering{
     private:

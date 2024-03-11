@@ -1,5 +1,8 @@
 #include "Improve.h"
 
+#include <cv_bridge/cv_bridge.h>
+#include <ros/ros.h>
+
 #define CLUSTERS 15
 
 // ----- Visualization settings -----
@@ -9,7 +12,8 @@ using namespace Eigen;
 
 // ------ For Accuracy -------
 #if accuracy_visual
-    VectorXd Accuracy_mat(CLUSTERS, 1);    // Accuracy
+#include <iostream>
+    VectorXd Accuracy_mat(CLUSTERS, 1); // Accuracy
 #endif
 
 MatrixXd Extracted_cen(CLUSTERS, 2);   // Extracted Centers

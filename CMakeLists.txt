@@ -34,6 +34,7 @@ add_library(clustering_with_ids
   src/Tracking.cpp
   src/Improve.cpp
   src/TerminalInfo.cpp
+  src/Visualizer.cpp
 )
 
 add_executable(clustering_with_ids_node src/id_speed_tracker.cpp)

@@ -1,12 +1,9 @@
 #include "TerminalInfo.h"
-#include <cstdlib>
+
 #include <cv_bridge/cv_bridge.h>
 #include <iostream>
-#include <math.h>
 #include <ros/ros.h>
-#include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
+
 // #include <print>
 
 // ----------- FUNCTIONS FOR DEBUGGING -----------------
@@ -107,4 +104,3 @@ void TerminalInfo::show_centers(const std::vector<std::vector<double>> &cluster_
     std::cout << "\n";
   }
 }
-// ------------------------------------------------------

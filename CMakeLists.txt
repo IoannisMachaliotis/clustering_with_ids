@@ -3,7 +3,7 @@ project(clustering_with_ids)
 set(CMAKE_CXX_STANDARD 20)
 
 # add_definitions(-std=c++17) # CMake 2.8.11 or older
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -O3 -march=native" )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -march=native" )
 
 find_package(cmake_modules REQUIRED)
 find_package(Eigen3 REQUIRED)

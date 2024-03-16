@@ -7,7 +7,7 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 
-cv::Mat im2;
+// cv::Mat im2;
 
 double radius;
 int szBuffer;
@@ -24,6 +24,9 @@ const bool terminal = true;
 
 struct Visualizer
 {
-    void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const Eigen::MatrixXd &object_coordinates);
+  void visualizer(const std::vector<std::vector<double>> &kalman_centers,
+                  std::vector<std::vector<double>> &cluster_list,
+                  const Eigen::MatrixXd &object_coordinates,
+                  cv::Mat im2);
 };
 #endif

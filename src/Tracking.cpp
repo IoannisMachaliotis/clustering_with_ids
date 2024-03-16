@@ -9,7 +9,7 @@ std::vector<std::vector<double>> speed_centers;
 
 // --------- TRACKING Methods --------
 
-[[nodiscard]] VectorXd& Tracking::track_by_most_events(const std::vector<std::vector<double> > &cluster_list, VectorXd &moving_obj)
+[[nodiscard]] VectorXd Tracking::track_by_most_events(const std::vector<std::vector<double> > &cluster_list, VectorXd &moving_obj)
 {
     double most_events = -1;
     for (const std::vector<double> &aVector : cluster_list)
@@ -36,7 +36,7 @@ std::vector<std::vector<double>> speed_centers;
     return moving_obj;
 }
 
-[[nodiscard]] MatrixXd& Tracking::object_tracker(const std::vector<std::vector<double> > &kalman_centers)
+[[nodiscard]] MatrixXd Tracking::object_tracker(const std::vector<std::vector<double> > &kalman_centers)
 {
     // ------------ Calculate speed among all clusters ---------------
     const unsigned int sizeOfKFcenters = kalman_centers.size();

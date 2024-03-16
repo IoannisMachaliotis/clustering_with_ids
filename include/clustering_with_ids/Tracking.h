@@ -11,7 +11,7 @@ const unsigned int speed_limit = 30;
 const unsigned int num_of_obj = 2;
 struct Tracking
 {
-        Eigen::VectorXd& track_by_most_events(const std::vector<std::vector<double>> &kalman_centers, Eigen::VectorXd &moving_obj);
-        Eigen::MatrixXd& object_tracker(const std::vector<std::vector<double>> &kalman_centers);
+        Eigen::VectorXd track_by_most_events(const std::vector<std::vector<double>> &kalman_centers, Eigen::VectorXd &moving_obj);
+        Eigen::MatrixXd object_tracker(const std::vector<std::vector<double>> &kalman_centers);
 };
 #endif

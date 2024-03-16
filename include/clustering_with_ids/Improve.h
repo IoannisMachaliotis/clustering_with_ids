@@ -13,7 +13,7 @@ std::vector<std::vector<double>> kalman_centers; // Predicted centers
 
 struct Improve
 {
-    std::vector<std::vector<double> >& remover(std::vector<std::vector<double> > &cluster_list);
-    std::vector<std::vector<double> >& kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers);
+    std::vector<std::vector<double> > remover(std::vector<std::vector<double> > &cluster_list);
+    std::vector<std::vector<double> > kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers);
 };
 #endif

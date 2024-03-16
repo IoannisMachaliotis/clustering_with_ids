@@ -14,8 +14,12 @@ extern const bool terminal;
 
 using namespace Eigen;
 
-void Visualizer::visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const MatrixXd &objectCoordinates)
-{
+void Visualizer::visualizer(
+    const std::vector<std::vector<double>> &kalman_centers,
+    std::vector<std::vector<double>> &cluster_list,
+    const MatrixXd &objectCoordinates,
+    cv::Mat im2)
+    {
   Tracking *tracking;
   double x1, y1, x2, y2;
 

@@ -196,7 +196,7 @@ void clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters)
     assigner(cluster_centers, cluster_converted, Is_in);
 }
 
-std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<double>> &cluster_list)
+std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<double>> &cluster_list, cv::Mat img)
 {
     Improve* opt;
     Tracking* tracking;
@@ -242,7 +242,7 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
     }
 
     // ---- VISUALIZATION OF CLUSTERS CREATED ----
-    vis->visualizer(kalman_centers, cluster_list, object_coordinates); // orange and green
+    vis->visualizer(kalman_centers, cluster_list, object_coordinates, img); // orange and green
 
     // USE THE NEW KALMAN CENTERS for next iteration (FEEDBACK)
     cluster_list.erase(cluster_list.begin(), cluster_list.end());
@@ -258,20 +258,6 @@ std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<d
 
     return kalman_centers;
 }
-
-void imageCallback(const sensor_msgs::ImageConstPtr &msg)
-{
-    try
-    {
-        im2 = cv_bridge::toCvCopy(msg, "rgb8")->image;
-        cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
-    }
-    catch (cv_bridge::Exception &e)
-    {
-        ROS_ERROR("Could not convert from '%s' to 'rgb8'.", msg->encoding.c_str());
-    }
-}
-
 
 void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
 {
@@ -315,11 +301,24 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
     }
 
     // Remove clusters who stopped being tracked, apply Kalman Filter and visualize results
-    removal_KF_visualize(cluster_centers);
+    removal_KF_visualize(cluster_centers, im2);
 
     // PUBLISH
     sensor_msgs::ImagePtr im_msg2 = cv_bridge::CvImage(std_msgs::Header(), "rgb8", im2).toImageMsg();
     pubIm.publish(im_msg2);
+}
+
+void imageCallback(const sensor_msgs::ImageConstPtr &msg)
+{
+    try
+    {
+        im2 = cv_bridge::toCvCopy(msg, "rgb8")->image; // Probably im2 is my visualized added data
+        cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
+    }
+    catch (cv_bridge::Exception &e)
+    {
+        ROS_ERROR("Could not convert from '%s' to 'rgb8'.", msg->encoding.c_str());
+    }
 }
 
 int main(int argc, char **argv)
@@ -339,11 +338,28 @@ int main(int argc, char **argv)
     nh.getParam("minN", minN);
 
     eclustering->init(szBuffer, radius, kappa, alpha, minN);
+    
+    cv::Mat im2;
 
-    ros::Subscriber subEv = nh.subscribe("/dvs/events", 1, eventCallback);              // Where to subscribe?
+    ros::Subscriber subEv = nh.subscribe(
+        "/dvs/events", 1, );            // Where to subscribe?
 
     image_transport::ImageTransport it(nh_public);
-    pubIm = it.advertise("tracker_with_ids_image", 1);
+    pubIm = it.advertise("tracker_with_ids_image", 1, eventCallback);
+
+    // auto imageCallback = [im2](const sensor_msgs::ImageConstPtr &msg)
+    // {
+    //     try
+    //     {
+    //         im2 = cv_bridge::toCvCopy(msg, "rgb8")->image; // Probably im2 is my visualized added data
+    //         cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
+    //     }
+    //     catch (cv_bridge::Exception &e)
+    //     {
+    //         ROS_ERROR("Could not convert from '%s' to 'rgb8'.", msg->encoding.c_str());
+    //     }
+    // };
+
     image_transport::Subscriber subIm = it.subscribe("dvs_rendering", 1, imageCallback); // Publish simultaniously with
 
     ros::spin();

@@ -232,7 +232,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
     return Output;
 }
 
-std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &cluster_list, const std::vector<double> &centersConverted, const double &IS_IN)
+std::vector<std::vector<double>> assigner(std::vector<std::vector<double>> &cluster_list, const std::vector<double> &centersConverted, const double &IS_IN)
 {
     const double Is_in = IS_IN;
     std::vector<double> aTempVector;                     // vector -->  {}
@@ -277,7 +277,7 @@ std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &clu
 }
 
 
-[[nodiscard]] std::vector<std::vector<double>>& clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
+ std::vector<std::vector<double>> clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
     double Is_in;
 
     // Convert cen vector from eigen vector to std::vector
@@ -313,7 +313,7 @@ std::vector<std::vector<double>>& assigner(std::vector<std::vector<double>> &clu
     return cluster_centers;
 }
 
-std::vector<std::vector<double>>& removal_KF_visualize(std::vector<std::vector<double>> &cluster_list)
+std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<double>> &cluster_list)
 {
     Improve* opt;
     Tracking* tracking;

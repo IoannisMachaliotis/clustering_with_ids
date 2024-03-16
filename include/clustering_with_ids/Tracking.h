@@ -20,6 +20,6 @@ MatrixXd object_coordinates(2,2);
 
 struct Tracking
 {
-        VectorXd& track_by_most_events(const vector<vector<double>> &n, VectorXd &moving_obj);
-        MatrixXd& object_tracker(const vector<vector<double>> &kalman_centers);
+        VectorXd track_by_most_events(const vector<vector<double>> &n, VectorXd &moving_obj);
+        MatrixXd object_tracker(const vector<vector<double>> &kalman_centers);
 };

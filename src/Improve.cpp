@@ -120,7 +120,7 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
 
 // --------------- KALMAN FILTER ----------------
 
-[[nodiscard]] VectorXd& KF_algorithm(const VectorXd &y)
+[[nodiscard]] VectorXd KF_algorithm(const VectorXd &y)
 {
     x_hat_new = A * x_hat;
     P = A * P * (A.transpose()) + Q;
@@ -131,7 +131,7 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     return x_hat_new;
 }
 
-[[nodiscard]] std::vector<std::vector<double> >& Improve::remover(std::vector<std::vector<double> > &cluster_list)
+[[nodiscard]] std::vector<std::vector<double>> Improve::remover(std::vector<std::vector<double> > &cluster_list)
 {
     const double buff_limit = 0.01; // seconds (how fast to remove)
     int Index;
@@ -160,7 +160,7 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     return cluster_list;
 }
 
-[[nodiscard]] std::vector<std::vector<double> >& Improve::kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers)
+[[nodiscard]] std::vector<std::vector<double>> Improve::kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers)
 {
     // ------------- 2D IMPLEMENTATION of State Space Kalman Filter ---------------
     std::vector<std::vector<double>> position_vector = {};

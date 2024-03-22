@@ -47,7 +47,7 @@ sensor_msgs::ImagePtr im_msg;
 
 void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const MatrixXd &object_coordinates)
 {
-    Tracking* tracking;
+    Tracking tracking;
     double x1, y1, x2, y2;
 
     if (clusters_list_created_visual)
@@ -61,7 +61,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
     if (sort_by_events)
     {
         VectorXd moving_obj(3);
-        tracking->track_by_most_events(kalman_centers, moving_obj);
+        tracking.track_by_most_events(kalman_centers, moving_obj);
 
         const unsigned int most_events = moving_obj(2);
         if (most_events > percentage_of_filtering * szBuffer)
@@ -109,8 +109,6 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
 
         std::string s3 = "Number of objects being detected: " + to_string(num_of_obj);
         cv::putText(im2, s3, cv::Point(10, 37), cv::FONT_HERSHEY_PLAIN, 0.6, cv::Scalar(255, 0, 0), 0, 16); //red 
-
-        delete tracking;
     }
 
     if (screen_details)
@@ -315,11 +313,11 @@ std::vector<std::vector<double>> assigner(std::vector<std::vector<double>> &clus
 
 std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<double>> &cluster_list)
 {
-    Improve* opt;
-    Tracking* tracking;
-    TerminalInfo* infoT;
+    Improve opt;
+    Tracking tracking;
+    TerminalInfo infoT;
     // REMOVAL OF CLUSTERS THAT HAVE STOPPED BEING TRACKED
-    opt->remover(cluster_list);
+    opt.remover(cluster_list);
 
     if (terminal)
     {
@@ -331,13 +329,13 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
     {
         // SORT before using kalman filter
         sort(cluster_list.begin(), cluster_list.end());
-        opt->kalmanfilter(cluster_list, kalman_centers);
+        opt.kalmanfilter(cluster_list, kalman_centers);
 
         // Terminal View of kalman_centers
         if (terminal)
         {
             std::cout << "\n----- 🟠 KALMAN CENTERS ------\n";
-            infoT->show_clusters(kalman_centers);
+            infoT.show_clusters(kalman_centers);
         }
     }
     else
@@ -347,14 +345,14 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
 
     if (!kalman_centers.empty())
     {
-        tracking->object_tracker(kalman_centers);
+        tracking.object_tracker(kalman_centers);
     }
 
     // TERMINAL VIEW of list created
     if (terminal)
     {
         std::cout << "\n----- 🟢 CLUSTERS LIST CREATED --\n";
-        infoT->show_clusters(cluster_list);
+        infoT.show_clusters(cluster_list);
     }
 
     // ---- VISUALIZATION OF CLUSTERS CREATED ----
@@ -366,10 +364,6 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
     {
         cluster_list.push_back(aVector);
     }
-
-    delete opt;
-    delete tracking;
-    delete infoT;
 
     return kalman_centers;
 }

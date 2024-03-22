@@ -146,7 +146,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
 }
 
 // ---------- CLUSTERS PROCESS FUNCTIONS ------------
-[[nodiscard]] std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list)
+[[nodiscard]] std::vector<double> is_cluster_in(std::vector<double> &aClusterVector, std::vector<std::vector<double>> &cluster_list)
 {
     std::vector<double> Output;
     double IS_IN = 0;
@@ -160,7 +160,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
 
     int featureIterator = 0;
     // Get info from centersConverted
-    for (double &aFeature : aVector)
+    for (double &aFeature : aClusterVector)
     {
         if (featureIterator == 0)
         {

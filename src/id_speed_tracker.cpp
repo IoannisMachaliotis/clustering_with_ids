@@ -14,6 +14,7 @@
 
 // --------Libraries added---------
 #include <vector>
+#include <memory>
 #include <math.h>
 #include <sstream>
 #include <iostream>
@@ -39,7 +40,7 @@ const double percentage_of_filtering = 0.2; // value range[0,1] lower-->more sen
 
 // ----------------------------------
 
-AEClustering *eclustering(new AEClustering);
+std::unique_ptr<AEClustering> eclustering(new AEClustering);
 
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;

@@ -277,7 +277,6 @@ std::vector<std::vector<double>> assigner(std::vector<std::vector<double>> &clus
     return cluster_list;
 }
 
-
  std::vector<std::vector<double>> clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
     double Is_in;
 
@@ -413,20 +412,20 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
         {
             Eigen::VectorXd cen(ClusterCenters.getClusterCentroid());
 
-                if (!sort_by_events)
+            if (!sort_by_events)
+            {
+                // original clusters (without IDs)
+                cv::circle(im2, cv::Point(cen[0], cen[1]), 3, cv::Scalar(200, 0, 200), -1, 16); // purple
+
+                // ------------ radius ----------
+                if (radius_visual)
                 {
-                    // original clusters (without IDs)
-                    cv::circle(im2, cv::Point(cen[0], cen[1]), 3, cv::Scalar(200, 0, 200), -1, 16); // purple
-
-                    // ------------ radius ----------
-                    if (radius_visual)
-                    {
-                        cv::circle(im2, cv::Point(cen[0], cen[1]), radius, cv::Scalar(0, 110, 0), 0, 16); // dark green
-                    }
+                    cv::circle(im2, cv::Point(cen[0], cen[1]), radius, cv::Scalar(0, 110, 0), 0, 16); // dark green
                 }
+            }
 
-                // Assign cluster
-                clusters_assign_process(cen, ClusterCenters);
+            // Assign cluster
+            clusters_assign_process(cen, ClusterCenters);
         }
     }
 

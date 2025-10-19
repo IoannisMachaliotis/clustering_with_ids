@@ -13,6 +13,7 @@
 
 // --------Libraries added---------
 #include <vector>
+#include <memory>
 #include <math.h>
 #include <iostream>
 #include <eigen3/Eigen/Core>
@@ -27,7 +28,7 @@ int szBuffer;
 
 // ----------------------------------
 
-AEClustering *eclustering(new AEClustering);
+std::unique_ptr<AEClustering> eclustering(new AEClustering);
 
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;
@@ -35,7 +36,7 @@ cv::Mat im2;  // Global variable for visualization
 Eigen::MatrixXd object_coordinates(2, 2);
 
 // ---------- CLUSTERS PROCESS FUNCTIONS ------------
-[[nodiscard]] std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list)
+[[nodiscard]] std::vector<double> is_cluster_in(std::vector<double> &aClusterVector, std::vector<std::vector<double>> &cluster_list)
 {
     std::vector<double> Output;
     double IS_IN = 0;
@@ -49,7 +50,7 @@ Eigen::MatrixXd object_coordinates(2, 2);
 
     int featureIterator = 0;
     // Get info from centersConverted
-    for (double &aFeature : aVector)
+    for (double &aFeature : aClusterVector)
     {
         if (featureIterator == 0)
         {
@@ -207,7 +208,7 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
     TerminalInfo* infoT;
     Visualizer* vis;
     // REMOVAL OF CLUSTERS THAT HAVE STOPPED BEING TRACKED
-    opt->remover(cluster_list);
+    opt.remover(cluster_list);
 
     if (terminal)
     {
@@ -219,13 +220,13 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
     {
         // SORT before using kalman filter
         sort(cluster_list.begin(), cluster_list.end());
-        opt->kalmanfilter(cluster_list, kalman_centers);
+        opt.kalmanfilter(cluster_list, kalman_centers);
 
         // Terminal View of kalman_centers
         if (terminal)
         {
             std::cout << "\n----- 🟠 KALMAN CENTERS ------\n";
-            infoT->show_clusters(kalman_centers);
+            infoT.show_clusters(kalman_centers);
         }
     }
     else
@@ -235,14 +236,14 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
 
     if (!kalman_centers.empty())
     {
-        tracking->object_tracker(kalman_centers);
+        tracking.object_tracker(kalman_centers);
     }
 
     // TERMINAL VIEW of list created
     if (terminal)
     {
         std::cout << "\n----- 🟢 CLUSTERS LIST CREATED --\n";
-        infoT->show_clusters(cluster_list);
+        infoT.show_clusters(cluster_list);
     }
 
     // ---- VISUALIZATION OF CLUSTERS CREATED ----
@@ -287,20 +288,20 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
         {
             Eigen::VectorXd cen(ClusterCenters.getClusterCentroid());
 
-                if (!sort_by_events)
+            if (!sort_by_events)
+            {
+                // original clusters (without IDs)
+                cv::circle(im2, cv::Point(cen[0], cen[1]), 3, cv::Scalar(200, 0, 200), -1, 16); // purple
+
+                // ------------ radius ----------
+                if (radius_visual)
                 {
-                    // original clusters (without IDs)
-                    cv::circle(im2, cv::Point(cen[0], cen[1]), 3, cv::Scalar(200, 0, 200), -1, 16); // purple
-
-                    // ------------ radius ----------
-                    if (radius_visual)
-                    {
-                        cv::circle(im2, cv::Point(cen[0], cen[1]), radius, cv::Scalar(0, 110, 0), 0, 16); // dark green
-                    }
+                    cv::circle(im2, cv::Point(cen[0], cen[1]), radius, cv::Scalar(0, 110, 0), 0, 16); // dark green
                 }
+            }
 
-                // Assign cluster
-                clusters_assign_process(cen, ClusterCenters);
+            // Assign cluster
+            clusters_assign_process(cen, ClusterCenters);
         }
     }
 

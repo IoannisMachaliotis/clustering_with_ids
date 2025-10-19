@@ -1,6 +1,12 @@
+// ...existing code...
 #include "Tracking.h"
+#include "Visualizer.h"
+#include <ros/ros.h>
+#include <vector>
 
 using namespace Eigen;
+
+extern Eigen::MatrixXd object_coordinates;
 
 std::vector<std::vector<double>> speed_centers;
 
@@ -91,7 +97,7 @@ std::vector<std::vector<double>> speed_centers;
         }
         speed_centers.push_back(temp_data);
     }
-    sort(speed_centers.begin(),speed_centers.end(), greater<std::vector<double>>());
+    sort(speed_centers.begin(),speed_centers.end(), std::greater<std::vector<double>>());
 
     object_coordinates << 0, 0, 0, 0;
 

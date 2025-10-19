@@ -1,8 +1,6 @@
 // This version include some parts with structures, in my attempt to learn OOP. 
 
-#include <cstddef>
 #include <image_transport/image_transport.h>
-#include <iterator>
 #include <sensor_msgs/Image.h>
 #include <dvs_msgs/EventArray.h>
 
@@ -11,32 +9,22 @@
 #include "clustering_with_ids/Improve.h"
 #include "clustering_with_ids/Tracking.h"
 #include "clustering_with_ids/TerminalInfo.h"
+#include "clustering_with_ids/Visualizer.h"
 
 // --------Libraries added---------
 #include <vector>
 #include <memory>
 #include <math.h>
-#include <sstream>
 #include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
+#include <eigen3/Eigen/Core>
 
 using namespace Eigen;
 
+// Local variables only
+static std::vector<std::vector<double>> cluster_centers; // extracted list for local use
 unsigned int ID;
-const double my_radius = 15;
 double radius;
 int szBuffer;
-static std::vector<std::vector<double>> cluster_centers; // extracted list
-
-// ----- Visualization settings -----
-const bool clusters_list_created_visual = true;
-const bool radius_visual = false;
-const bool screen_details = true;
-const bool terminal = true;
-// Assumption that the one moving generates the most events
-const bool sort_by_events = false;
-const double percentage_of_filtering = 0.2; // value range[0,1] lower-->more sensitive
 
 // ----------------------------------
 
@@ -44,105 +32,8 @@ std::unique_ptr<AEClustering> eclustering(new AEClustering);
 
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;
-
-void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vector<std::vector<double>> &cluster_list, const MatrixXd &object_coordinates)
-{
-    Tracking tracking;
-    double x1, y1, x2, y2;
-
-    if (clusters_list_created_visual)
-    {
-        for (const std::vector<double> &aVector : cluster_list)
-        {                                                                             // kalman_centers with IDs
-            cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(0, 255, 0), -1, 16); // orange
-        }
-    }
-
-    if (sort_by_events)
-    {
-        VectorXd moving_obj(3);
-        tracking.track_by_most_events(kalman_centers, moving_obj);
-
-        const unsigned int most_events = moving_obj(2);
-        if (most_events > percentage_of_filtering * szBuffer)
-        {                                                                        // filter out non moving objects
-            cv::Point pt1(moving_obj(0) - radius, moving_obj(1) - (radius + 5)); // its top left corner...
-            cv::Point pt2(moving_obj(0) + radius, moving_obj(1) + (radius + 5)); // its bottom right corner.
-            cv::rectangle(im2, pt1, pt2, cv::Scalar(0, 255, 0));                 // green
-        }
-    }
-    else
-    {
-        for (const std::vector<double> &aVector : kalman_centers)
-        {                                                                               // kalman_centers with IDs
-            cv::circle(im2, cv::Point(aVector[1], aVector[2]), 2, cv::Scalar(255, 150, 0), -1, 16); // orange
-
-            // -------- my_radius --------
-            if (radius_visual)
-            {
-                cv::circle(im2, cv::Point(aVector[1], aVector[2]), my_radius, cv::Scalar(100, 0, 100), 0, 16); // dark purple
-            }
-
-            const int id = aVector[0];
-            const int ev_num = aVector[4];
-            std::string s1 = "ID:" + to_string(id);
-            std::string s2 = "#ev:" + to_string(ev_num);
-
-            cv::putText(im2, s1, cv::Point(aVector[1] + 4, aVector[2] + 4), cv::FONT_ITALIC, 0.3, cv::Scalar(100, 150, 200), 0, 16);
-            cv::putText(im2, s2, cv::Point(aVector[1] + 4, aVector[2] - 6), cv::FONT_ITALIC, 0.3, cv::Scalar(255, 80, 80), 0, 16);
-        }
-
-        // ------------ Object Tracking --------------
-        x1 = object_coordinates(0,0);
-        x2 = object_coordinates(1,0);
-        y1 = object_coordinates(0,1);
-        y2 = object_coordinates(1,1);
-
-        if (x1>0.1 &&  y1>0.1)
-        {
-            cv::circle(im2, cv::Point(x1, y1), 10, cv::Scalar(255, 150, 0), 0, 16); // orange
-        }
-        if (x2>0.1 && y2>0.1)
-        {
-            cv::circle(im2, cv::Point(x2, y2), 10, cv::Scalar(255, 150, 0), 0, 16); // orange
-        }
-
-        std::string s3 = "Number of objects being detected: " + to_string(num_of_obj);
-        cv::putText(im2, s3, cv::Point(10, 37), cv::FONT_HERSHEY_PLAIN, 0.6, cv::Scalar(255, 0, 0), 0, 16); //red 
-    }
-
-    if (screen_details)
-    {
-        // In case of sorting by events method
-        if (sort_by_events)
-        {
-            cv::Point pt1(184, 5);
-            cv::Point pt2(188, 11);
-            cv::rectangle(im2, pt1, pt2, cv::Scalar(0, 255, 0));
-            cv::putText(im2, "Moving Object", cv::Point(190, 11), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
-            const unsigned int ss = percentage_of_filtering * 100;
-            std::string s3 = "Percentage of filtering: " + to_string(ss) + "%";
-            cv::putText(im2, s3, cv::Point(190, 20), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
-        }
-        else
-        {
-            // ------ Clusters info -------
-            cv::circle(im2, cv::Point(225, 7), 3, cv::Scalar(200, 0, 200), -1, 16); // purple
-            cv::putText(im2, "Original clusters", cv::Point(230, 10), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
-            cv::circle(im2, cv::Point(225, 17), 3, cv::Scalar(255, 150, 0), -1, 16); // orange
-            cv::putText(im2, "Corrected centers", cv::Point(230, 19), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
-            cv::circle(im2, cv::Point(225, 27), 3, cv::Scalar(0, 255, 0), -1, 16); // green
-            cv::putText(im2, "Extracted centers", cv::Point(230, 29), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
-        }
-
-        // ------- Camera info -------
-        cv::putText(im2, "Camera/Sensor: DAVIS 350x250", cv::Point(3, 10), cv::FONT_HERSHEY_PLAIN, 0.6, cv::Scalar(80, 100, 185), 0, 16);
-        cv::circle(im2, cv::Point(5, 17), 2, cv::Scalar(0, 0, 255), -1, 16); // blue
-        cv::putText(im2, "Positive events", cv::Point(10, 19), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
-        cv::circle(im2, cv::Point(5, 26), 2, cv::Scalar(255, 0, 0), -1, 16); // red
-        cv::putText(im2, "Negative events", cv::Point(10, 28), cv::FONT_ITALIC, 0.3, cv::Scalar(200, 200, 0), 0, 16);
-    }
-}
+cv::Mat im2;  // Global variable for visualization
+Eigen::MatrixXd object_coordinates(2, 2);
 
 // ---------- CLUSTERS PROCESS FUNCTIONS ------------
 [[nodiscard]] std::vector<double> is_cluster_in(std::vector<double> &aClusterVector, std::vector<std::vector<double>> &cluster_list)
@@ -231,7 +122,7 @@ void visualizer(const std::vector<std::vector<double>> &kalman_centers, std::vec
     return Output;
 }
 
-std::vector<std::vector<double>> assigner(std::vector<std::vector<double>> &cluster_list, const std::vector<double> &centersConverted, const double &IS_IN)
+void assigner(std::vector<std::vector<double>> &cluster_list, const std::vector<double> &centersConverted, const double &IS_IN)
 {
     const double Is_in = IS_IN;
     std::vector<double> aTempVector;                     // vector -->  {}
@@ -272,10 +163,11 @@ std::vector<std::vector<double>> assigner(std::vector<std::vector<double>> &clus
     // Push back new cluster center, generated with ID, in a VECTOR, alongside with timestamp
     cluster_list.push_back(aTempVector);
 
-    return cluster_list;
+    // return cluster_list;
 }
 
- std::vector<std::vector<double>> clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
+
+void clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters){
     double Is_in;
 
     // Convert cen vector from eigen vector to std::vector
@@ -307,15 +199,14 @@ std::vector<std::vector<double>> assigner(std::vector<std::vector<double>> &clus
 
     // ASSIGN THE NEW VECTOR TO cluster_centers
     assigner(cluster_centers, cluster_converted, Is_in);
-
-    return cluster_centers;
 }
 
-std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<double>> &cluster_list)
+std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<double>> &cluster_list, cv::Mat img)
 {
-    Improve opt;
-    Tracking tracking;
-    TerminalInfo infoT;
+    Improve* opt;
+    Tracking* tracking;
+    TerminalInfo* infoT;
+    Visualizer* vis;
     // REMOVAL OF CLUSTERS THAT HAVE STOPPED BEING TRACKED
     opt.remover(cluster_list);
 
@@ -356,7 +247,7 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
     }
 
     // ---- VISUALIZATION OF CLUSTERS CREATED ----
-    visualizer(kalman_centers, cluster_list, object_coordinates); // orange and green
+    vis->visualizer(kalman_centers, cluster_list, object_coordinates, img); // orange and green
 
     // USE THE NEW KALMAN CENTERS for next iteration (FEEDBACK)
     cluster_list.erase(cluster_list.begin(), cluster_list.end());
@@ -365,22 +256,13 @@ std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<do
         cluster_list.push_back(aVector);
     }
 
+    delete opt;
+    delete tracking;
+    delete infoT;
+    delete vis;
+
     return kalman_centers;
 }
-
-void imageCallback(const sensor_msgs::ImageConstPtr &msg)
-{
-    try
-    {
-        im2 = cv_bridge::toCvCopy(msg, "rgb8")->image;
-        cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
-    }
-    catch (cv_bridge::Exception &e)
-    {
-        ROS_ERROR("Could not convert from '%s' to 'rgb8'.", msg->encoding.c_str());
-    }
-}
-
 
 void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
 {
@@ -424,11 +306,24 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
     }
 
     // Remove clusters who stopped being tracked, apply Kalman Filter and visualize results
-    removal_KF_visualize(cluster_centers);
+    removal_KF_visualize(cluster_centers, im2);
 
     // PUBLISH
     sensor_msgs::ImagePtr im_msg2 = cv_bridge::CvImage(std_msgs::Header(), "rgb8", im2).toImageMsg();
     pubIm.publish(im_msg2);
+}
+
+void imageCallback(const sensor_msgs::ImageConstPtr &msg)
+{
+    try
+    {
+        im2 = cv_bridge::toCvCopy(msg, "rgb8")->image; // Probably im2 is my visualized added data
+        cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
+    }
+    catch (cv_bridge::Exception &e)
+    {
+        ROS_ERROR("Could not convert from '%s' to 'rgb8'.", msg->encoding.c_str());
+    }
 }
 
 int main(int argc, char **argv)
@@ -449,10 +344,24 @@ int main(int argc, char **argv)
 
     eclustering->init(szBuffer, radius, kappa, alpha, minN);
 
-    ros::Subscriber subEv = nh.subscribe("/dvs/events", 1, eventCallback);              // Where to subscribe?
+    ros::Subscriber subEv = nh.subscribe("/dvs/events", 1, eventCallback);
 
     image_transport::ImageTransport it(nh_public);
     pubIm = it.advertise("tracker_with_ids_image", 1);
+
+    // auto imageCallback = [im2](const sensor_msgs::ImageConstPtr &msg)
+    // {
+    //     try
+    //     {
+    //         im2 = cv_bridge::toCvCopy(msg, "rgb8")->image; // Probably im2 is my visualized added data
+    //         cv::Mat im = cv_bridge::toCvShare(msg, "rgb8")->image;
+    //     }
+    //     catch (cv_bridge::Exception &e)
+    //     {
+    //         ROS_ERROR("Could not convert from '%s' to 'rgb8'.", msg->encoding.c_str());
+    //     }
+    // };
+
     image_transport::Subscriber subIm = it.subscribe("dvs_rendering", 1, imageCallback); // Publish simultaniously with
 
     ros::spin();

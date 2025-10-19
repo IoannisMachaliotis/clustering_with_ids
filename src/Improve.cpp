@@ -1,5 +1,8 @@
 #include "Improve.h"
 
+#include <cv_bridge/cv_bridge.h>
+#include <ros/ros.h>
+
 #define CLUSTERS 15
 
 // ----- Visualization settings -----
@@ -9,32 +12,33 @@ using namespace Eigen;
 
 // ------ For Accuracy -------
 #if accuracy_visual
-    VectorXd Accuracy_mat(CLUSTERS, 1);    // Accuracy
+#include <iostream>
+    VectorXd Accuracy_mat(CLUSTERS, 1); // Accuracy
 #endif
 
-MatrixXd Extracted_cen(CLUSTERS, 2);   // Extracted Centers
-MatrixXd Predicted_cen(CLUSTERS, 2);   // Predicted Centers
-MatrixXd Velocity_mat(CLUSTERS, 2);    // Velocity
-const double dt = 20;;
+// Δήλωση των matrices/vectors χωρίς διαστάσεις
+MatrixXd Extracted_cen;   // Extracted Centers
+MatrixXd Predicted_cen;   // Predicted Centers
+MatrixXd Velocity_mat;    // Velocity
+const double dt = 20;
 // -------------- KALMAN FILTER VARIABLES ----------------
 const unsigned int n = 3;                             // Number of states (position, velocity, acceleration)
 const unsigned int m = 1;                             // Number of measurements
 
-
-MatrixXd A(n, n);                      // State Matrix
-MatrixXd C(m, n);                      // Output matrix
-MatrixXd Q(n, n);                      // Process noise covariance (keeps the state covariance matrix from becoming too small, or going to 0)
-MatrixXd R(m, m);                      // Measurement covariance matrix (Error in the measurement)
-MatrixXd P(n, n);                      // State covariance matrix (Error in the estimate)
-MatrixXd I(n, n);                      // Identity Matrix
-MatrixXd P_previous(n, n);
-MatrixXd K;                            // Kalman Gain (based on comparing the error in the estimate to the error in the measurement)
-VectorXd x_hat(m, n), x_hat_new(m, n); // Estimated states
-VectorXd x_hat_previous(m, n);
-VectorXd y(m);
-VectorXd x0(n);
-
-VectorXd v_temp(n);
+// Δήλωση των Kalman matrices χωρίς διαστάσεις
+MatrixXd A;                      // State Matrix
+MatrixXd C;                      // Output matrix
+MatrixXd Q;                      // Process noise covariance
+MatrixXd R;                      // Measurement covariance matrix
+MatrixXd P;                      // State covariance matrix
+MatrixXd I;                      // Identity Matrix
+MatrixXd P_previous;
+MatrixXd K;                      // Kalman Gain
+VectorXd x_hat, x_hat_new;      // Estimated states
+VectorXd x_hat_previous;
+VectorXd y;
+VectorXd x0;
+VectorXd v_temp;
 
 // ------ For last Kalman Centers (Feedback) ------
 MatrixXd previous_KF_centers(CLUSTERS, 2);
@@ -131,7 +135,7 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     return x_hat_new;
 }
 
-[[nodiscard]] std::vector<std::vector<double>> Improve::remover(std::vector<std::vector<double> > &cluster_list)
+[[nodiscard]] std::vector<std::vector<double> > Improve::remover(std::vector<std::vector<double> > &cluster_list)
 {
     const double buff_limit = 0.01; // seconds (how fast to remove)
     int Index;
@@ -162,6 +166,39 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
 
 [[nodiscard]] std::vector<std::vector<double>> Improve::kalmanfilter(std::vector<std::vector<double> > &cluster_list, std::vector<std::vector<double> > &kalman_centers)
 {
+    ROS_INFO("Kalman filter called with cluster_list size: %zu", cluster_list.size());
+    
+    // Get actual size from input
+    const size_t numClusters = std::min(static_cast<size_t>(CLUSTERS), cluster_list.size());
+    
+    // Initialize matrices with proper dimensions
+    Extracted_cen.resize(numClusters, 2);
+    Predicted_cen.resize(numClusters, 2);
+    Velocity_mat.resize(numClusters, 2);
+    // Ensure previous KF centers has matching rows for feedback
+    previous_KF_centers.resize(numClusters, 2);
+    
+    // Initialize Kalman matrices
+    A.resize(n, n);
+    C.resize(m, n);
+    Q.resize(n, n);
+    R.resize(m, m);
+    P.resize(n, n);
+    I.resize(n, n);
+    P_previous.resize(n, n);
+    K.resize(m, n);
+    x_hat.resize(n);
+    x_hat_new.resize(n);
+    x_hat_previous.resize(n);
+    y.resize(m);
+    x0.resize(n);
+    v_temp.resize(n);
+    
+    // Initialize to zero
+    Extracted_cen.setZero();
+    Predicted_cen.setZero();
+    Velocity_mat.setZero();
+
     // ------------- 2D IMPLEMENTATION of State Space Kalman Filter ---------------
     std::vector<std::vector<double>> position_vector = {};
     std::vector<double> temporary_IDs = {};
@@ -200,16 +237,51 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
         position_vector.push_back(temp_xy);
     }
 
+    // === Ασφάλεια: αν δεν υπάρχουν clusters, μην συνεχίσεις ===
+    if (position_vector.size() == 0) {
+        return kalman_centers;
+    }
+
+    // Safety check for empty vectors
+    if (position_vector.size() == 0) {
+        ROS_WARN("Empty position_vector before Eigen conversion, skipping");
+        return kalman_centers;
+    }
+    
+    ROS_INFO("Creating Eigen matrices with size: position_vector=%zu, IDs=%zu, timestamps=%zu", 
+             position_vector.size(), temporary_IDs.size(), temporary_t_stamp.size());
+
     // CONVERT BACK TO EIGEN MATRICES
-    VectorXd temp_IDs(position_vector.size(), 1);        // IDs
-    MatrixXd POS_MEAS_MAT_2D(position_vector.size(), 2); // Position
-    VectorXd temp_t_stamp(position_vector.size(), 1);    // t_stamps
-    VectorXd temp_num_ev(position_vector.size(), 1);     // # of events
-    VectorXd temp_speed(position_vector.size(),1);       // speed
+    const size_t actualSize = position_vector.size();
+    
+    // Safety check
+    if (actualSize == 0) {
+        ROS_WARN("Empty position vector, skipping Kalman update");
+        return kalman_centers;
+    }
+    
+    ROS_INFO("Converting vectors to Eigen matrices with size %zu", actualSize);
+    
+    VectorXd temp_IDs(actualSize, 1);        // IDs
+    MatrixXd POS_MEAS_MAT_2D(actualSize, 2); // Position
+    VectorXd temp_t_stamp(actualSize, 1);    // t_stamps
+    VectorXd temp_num_ev(actualSize, 1);     // # of events
+    VectorXd temp_speed(actualSize, 1);      // speed
+    
+    // Initialize to zero
+    temp_IDs.setZero();
+    POS_MEAS_MAT_2D.setZero();
+    temp_t_stamp.setZero();
+    temp_num_ev.setZero();
+    temp_speed.setZero();
 
     int counter_1 = 0;
     for (double &i : temporary_IDs)                            // IDs
     {
+        if (counter_1 >= temp_IDs.size()) {
+            ROS_WARN("temp_IDs index out of range: %d >= %zu", counter_1, temp_IDs.size());
+            break;
+        }
         temp_IDs(counter_1) = i;
         counter_1++;
     }
@@ -219,6 +291,14 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
         int j = 0;
         for (const double &aCluster : aVector)
         {
+            if (counter_2 >= POS_MEAS_MAT_2D.rows()) {
+                ROS_WARN("POS_MEAS_MAT_2D row index out of range: %d >= %d", counter_2, (int)POS_MEAS_MAT_2D.rows());
+                break;
+            }
+            if (j >= POS_MEAS_MAT_2D.cols()) {
+                ROS_WARN("POS_MEAS_MAT_2D col index out of range: %d >= %d (aVector may have unexpected length)", j, (int)POS_MEAS_MAT_2D.cols());
+                break;
+            }
             POS_MEAS_MAT_2D(counter_2, j) = aCluster;
             j++;
         }
@@ -227,18 +307,30 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     int counter_3 = 0;
     for (const double &t_stamp : temporary_t_stamp)             // t_stamps
     {
+        if (counter_3 >= temp_t_stamp.size()) {
+            ROS_WARN("temp_t_stamp index out of range: %d >= %zu", counter_3, temp_t_stamp.size());
+            break;
+        }
         temp_t_stamp(counter_3) = t_stamp;
         counter_3++;
     }
     int counter_4 = 0;
     for (const double &NumOfEvents : temporary_num_of_ev)        // # of events
     {
+        if (counter_4 >= temp_num_ev.size()) {
+            ROS_WARN("temp_num_ev index out of range: %d >= %zu", counter_4, temp_num_ev.size());
+            break;
+        }
         temp_num_ev(counter_4) = NumOfEvents;
         counter_4++;
     }
     int counter_5 = 0;
     for (const double &speed : temporary_speed)                  // speed
     {
+        if (counter_5 >= temp_speed.size()) {
+            ROS_WARN("temp_speed index out of range: %d >= %zu", counter_5, temp_speed.size());
+            break;
+        }
         temp_speed(counter_5) = speed;
         counter_5++;
     }
@@ -342,14 +434,14 @@ MatrixXd previous_KF_centers(CLUSTERS, 2);
     int counter3 = 0;
     for (const std::vector<double> &aVector : kalman_centers)
     {
-        int j = 0;
-        for (const double &aCluster : aVector)
-        {
-            if (j != 0)
-            {
-                previous_KF_centers(counter3, j - 1) = aCluster;
-            }
-            j++;
+        // aVector format: {ID, x, y, t_stamp, #ev, speed}
+        // We only keep x and y in previous_KF_centers (cols 0 and 1)
+        if (aVector.size() >= 3) {
+            // j==1 -> x, j==2 -> y
+            previous_KF_centers(counter3, 0) = aVector[1];
+            previous_KF_centers(counter3, 1) = aVector[2];
+        } else {
+            ROS_WARN("kalman_centers[%d] has unexpected length=%zu, skipping previous_KF_centers update", counter3, aVector.size());
         }
         counter3++;
     }

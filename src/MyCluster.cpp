@@ -1,6 +1,5 @@
 #include "clustering_with_ids/MyCluster.h"
 
-
 MyCluster::MyCluster(){
     mu_ = Eigen::VectorXd::Zero(2);
     n_ = 0;

@@ -1,9 +1,12 @@
+// ...existing code...
 #include "Tracking.h"
-#include "../../src/id_speed_tracker.cpp"
+#include "Visualizer.h"
 #include <ros/ros.h>
 #include <vector>
 
 using namespace Eigen;
+
+extern Eigen::MatrixXd object_coordinates;
 
 std::vector<std::vector<double>> speed_centers;
 

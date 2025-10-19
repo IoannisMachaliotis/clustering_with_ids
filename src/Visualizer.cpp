@@ -1,3 +1,4 @@
+
 #include "Visualizer.h"
 #include "Tracking.h"
 #include <ros/ros.h>
@@ -13,6 +14,9 @@ extern const bool screen_details;
 extern const bool terminal;
 
 using namespace Eigen;
+
+extern double radius;
+extern int szBuffer;
 
 void Visualizer::visualizer(
     const std::vector<std::vector<double>> &kalman_centers,

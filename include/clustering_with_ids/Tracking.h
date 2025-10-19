@@ -14,4 +14,7 @@ struct Tracking
         Eigen::VectorXd track_by_most_events(const std::vector<std::vector<double>> &kalman_centers, Eigen::VectorXd &moving_obj);
         Eigen::MatrixXd object_tracker(const std::vector<std::vector<double>> &kalman_centers);
 };
+
+extern Eigen::MatrixXd object_coordinates;
+
 #endif

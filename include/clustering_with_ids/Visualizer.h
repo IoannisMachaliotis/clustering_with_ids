@@ -7,10 +7,9 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 
-// cv::Mat im2;
-
-double radius;
-int szBuffer;
+extern double radius;
+extern int szBuffer;
+// extern cv::Mat im2; (defined in a single .cpp)
 
 // Assumption that the one moving generates the most events
 const bool sort_by_events = false;

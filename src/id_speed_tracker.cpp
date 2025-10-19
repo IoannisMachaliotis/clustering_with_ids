@@ -15,13 +15,15 @@
 #include <vector>
 #include <math.h>
 #include <iostream>
-
-MatrixXd object_coordinates(2, 2);
+#include <eigen3/Eigen/Core>
 
 using namespace Eigen;
 
+// Local variables only
+static std::vector<std::vector<double>> cluster_centers; // extracted list for local use
 unsigned int ID;
-static std::vector<std::vector<double>> cluster_centers; // extracted list
+double radius;
+int szBuffer;
 
 // ----------------------------------
 
@@ -29,6 +31,8 @@ AEClustering *eclustering(new AEClustering);
 
 image_transport::Publisher pubIm;
 sensor_msgs::ImagePtr im_msg;
+cv::Mat im2;  // Global variable for visualization
+Eigen::MatrixXd object_coordinates(2, 2);
 
 // ---------- CLUSTERS PROCESS FUNCTIONS ------------
 [[nodiscard]] std::vector<double> is_cluster_in(std::vector<double> &aVector, std::vector<std::vector<double>> &cluster_list)
@@ -338,14 +342,11 @@ int main(int argc, char **argv)
     nh.getParam("minN", minN);
 
     eclustering->init(szBuffer, radius, kappa, alpha, minN);
-    
-    cv::Mat im2;
 
-    ros::Subscriber subEv = nh.subscribe(
-        "/dvs/events", 1, );            // Where to subscribe?
+    ros::Subscriber subEv = nh.subscribe("/dvs/events", 1, eventCallback);
 
     image_transport::ImageTransport it(nh_public);
-    pubIm = it.advertise("tracker_with_ids_image", 1, eventCallback);
+    pubIm = it.advertise("tracker_with_ids_image", 1);
 
     // auto imageCallback = [im2](const sensor_msgs::ImageConstPtr &msg)
     // {

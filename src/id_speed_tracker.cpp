@@ -72,6 +72,17 @@ Eigen::MatrixXd object_coordinates(2, 2);
         double x;
         double y;
         double Id;
+        // --------Libraries added---------
+        #include <map>
+        #include <set>
+        #include <limits>
+
+        // Map: ID -> frames since last seen
+        static std::map<unsigned int, int> id_last_seen;
+        // Set: IDs που είναι διαθέσιμα για επαναχρησιμοποίηση
+        static std::set<unsigned int> free_ids;
+        // Πόσα frames να περιμένουμε πριν απελευθερώσουμε ένα ID
+        const int ID_LOST_THRESHOLD = 10;
         double t_prev;
 
         int featureIteratorII = 0;
@@ -81,7 +92,15 @@ Eigen::MatrixXd object_coordinates(2, 2);
             {
                 Id = aCenter;
             }
-            if (featureIteratorII == 1)
+                unsigned int new_id;
+                if (!free_ids.empty()) {
+                    new_id = *free_ids.begin();
+                    free_ids.erase(free_ids.begin());
+                } else {
+                    new_id = ID;
+                    ID++;
+                }
+                aTempVector.push_back(new_id);                       // vector -->  {ID}
             {
                 x = aCenter;
             }
@@ -200,6 +219,23 @@ void clusters_assign_process(const VectorXd &cluster, MyCluster &ClusterCenters)
     assigner(cluster_centers, cluster_converted, Is_in);
 }
 
+// Κάλεσέ το αυτό στο τέλος κάθε frame για να απελευθερώνεις IDs που χάθηκαν
+void update_id_lifetimes()
+{
+    std::vector<unsigned int> to_release;
+    for (auto &kv : id_last_seen) {
+        kv.second++;
+        if (kv.second > ID_LOST_THRESHOLD) {
+            to_release.push_back(kv.first);
+        }
+    }
+    for (unsigned int id : to_release) {
+        id_last_seen.erase(id);
+        free_ids.insert(id);
+        ROS_INFO("Released ID %u after %d frames of absence", id, ID_LOST_THRESHOLD);
+    }
+}
+
 std::vector<std::vector<double>> removal_KF_visualize(std::vector<std::vector<double>> &cluster_list, cv::Mat img)
 {
     Improve* opt;
@@ -306,7 +342,7 @@ void eventCallback(const dvs_msgs::EventArray::ConstPtr &msg)
 
     // Remove clusters who stopped being tracked, apply Kalman Filter and visualize results
     removal_KF_visualize(cluster_centers, im2);
-
+    update_id_lifetimes();
     // PUBLISH
     sensor_msgs::ImagePtr im_msg2 = cv_bridge::CvImage(std_msgs::Header(), "rgb8", im2).toImageMsg();
     pubIm.publish(im_msg2);
